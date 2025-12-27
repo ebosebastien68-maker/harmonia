@@ -826,6 +826,7 @@
   <script>
     /* CONFIGURATION API - UNE SEULE ROUTE */
     const API_URL = 'https://dfccebkmiebkqfwdudjg.supabase.co/functions/v1/auth';
+    // Pas besoin de clé si la vérification JWT est désactivée dans l'Edge Function
     
     const captchas = {
       signup: '',
@@ -944,7 +945,9 @@
       try {
         const response = await fetch(API_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json'
+          },
           body: JSON.stringify(data)
         });
         
@@ -1001,7 +1004,9 @@
       try {
         const response = await fetch(API_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json'
+          },
           body: JSON.stringify(data)
         });
         
@@ -1057,7 +1062,9 @@
       try {
         const response = await fetch(API_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json'
+          },
           body: JSON.stringify(data)
         });
         
@@ -1094,4 +1101,4 @@
     generateCaptcha('forgot');
   </script>
 </body>
-</html>
+  </html>
