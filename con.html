@@ -3,11 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Harmonia</title>
+  <title>Harmonia - Authentification Sécurisée</title>
   <style>
-    /* ========================================
-       RESET & BASE
-    ======================================== */
     * {
       margin: 0;
       padding: 0;
@@ -21,16 +18,14 @@
       position: relative;
     }
     
-    /* ========================================
-       VIDÉO EN ARRIÈRE-PLAN
-    ======================================== */
+    /* VIDÉO PLEIN ÉCRAN */
     .video-background {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      z-index: -2;
+      z-index: 1;
       overflow: hidden;
     }
     
@@ -46,14 +41,14 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(135deg, rgba(30, 30, 60, 0.4) 0%, rgba(60, 30, 80, 0.4) 100%);
-      z-index: -1;
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(20, 20, 40, 0.4) 100%);
+      z-index: 2;
     }
     
-    /* ========================================
-       CONTAINER PRINCIPAL
-    ======================================== */
+    /* CONTAINER PRINCIPAL */
     .main-container {
+      position: relative;
+      z-index: 3;
       min-height: 100vh;
       display: flex;
       justify-content: center;
@@ -61,22 +56,20 @@
       padding: 30px 20px;
     }
     
-    /* ========================================
-       CARD GLASSMORPHISM
-    ======================================== */
+    /* CARD MODERNE GLASSMORPHISM */
     .auth-card {
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(30px) saturate(150%);
-      -webkit-backdrop-filter: blur(30px) saturate(150%);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 32px;
       box-shadow: 
-        0 8px 32px 0 rgba(0, 0, 0, 0.37),
-        inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+        0 8px 32px 0 rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
       padding: 50px 45px;
       max-width: 520px;
       width: 100%;
-      animation: slideUp 0.6s ease;
+      animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
     @keyframes slideUp {
@@ -90,84 +83,92 @@
       }
     }
     
-    /* ========================================
-       HEADER
-    ======================================== */
+    /* HEADER */
     .header {
       text-align: center;
       margin-bottom: 40px;
     }
     
     .logo {
-      font-size: 52px;
-      margin-bottom: 12px;
-      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+      font-size: 56px;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 4px 20px rgba(255, 255, 255, 0.3));
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
     }
     
     h1 {
       color: #ffffff;
-      font-size: 34px;
-      font-weight: 700;
+      font-size: 36px;
+      font-weight: 800;
       margin-bottom: 8px;
-      text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+      text-shadow: 0 4px 30px rgba(0, 0, 0, 0.8);
+      letter-spacing: -0.5px;
     }
     
     .subtitle {
-      color: rgba(255, 255, 255, 0.85);
+      color: rgba(255, 255, 255, 0.9);
       font-size: 15px;
-      text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+      font-weight: 500;
+      text-shadow: 0 2px 15px rgba(0, 0, 0, 0.6);
     }
     
-    /* ========================================
-       ONGLETS
-    ======================================== */
+    /* ONGLETS MODERNES */
     .tabs {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       margin-bottom: 35px;
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.04);
       backdrop-filter: blur(10px);
-      padding: 6px;
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 5px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
     
     .tab {
       flex: 1;
-      padding: 12px 16px;
+      padding: 13px 18px;
       background: transparent;
       border: none;
       cursor: pointer;
       font-size: 14px;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.7);
-      border-radius: 12px;
-      transition: all 0.3s ease;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.6);
+      border-radius: 14px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
     }
     
+    .tab:hover:not(.active) {
+      color: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
     .tab.active {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.18);
       backdrop-filter: blur(10px);
       color: #ffffff;
       box-shadow: 
-        0 4px 16px rgba(255, 255, 255, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        0 4px 20px rgba(255, 255, 255, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
     }
     
-    /* ========================================
-       MESSAGES
-    ======================================== */
+    /* MESSAGES */
     .message {
-      padding: 16px 20px;
-      border-radius: 14px;
+      padding: 18px 22px;
+      border-radius: 16px;
       margin-bottom: 25px;
       display: none;
       font-size: 14px;
-      line-height: 1.5;
+      line-height: 1.6;
       animation: fadeIn 0.4s ease;
       backdrop-filter: blur(10px);
       border: 1px solid;
+      font-weight: 500;
     }
     
     @keyframes fadeIn {
@@ -182,26 +183,24 @@
     }
     
     .message.success {
-      background: rgba(16, 185, 129, 0.15);
+      background: rgba(16, 185, 129, 0.18);
       color: #d1fae5;
-      border-color: rgba(16, 185, 129, 0.3);
-      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.35);
+      box-shadow: 0 4px 24px rgba(16, 185, 129, 0.25);
     }
     
     .message.error {
-      background: rgba(239, 68, 68, 0.15);
+      background: rgba(239, 68, 68, 0.18);
       color: #fee2e2;
-      border-color: rgba(239, 68, 68, 0.3);
-      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.35);
+      box-shadow: 0 4px 24px rgba(239, 68, 68, 0.25);
     }
     
     .message.show {
       display: block;
     }
     
-    /* ========================================
-       SECTIONS DE FORMULAIRE
-    ======================================== */
+    /* SECTIONS */
     .form-section {
       display: none;
     }
@@ -211,77 +210,76 @@
       animation: fadeIn 0.4s ease;
     }
     
-    /* ========================================
-       FORMULAIRES
-    ======================================== */
+    /* FORMULAIRES */
     .form-group {
       margin-bottom: 24px;
     }
     
     label {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       color: #ffffff;
-      font-weight: 600;
+      font-weight: 700;
       font-size: 14px;
-      text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
     }
     
     input {
       width: 100%;
-      padding: 14px 16px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
+      padding: 15px 18px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 14px;
       font-size: 15px;
-      transition: all 0.3s ease;
-      background: rgba(255, 255, 255, 0.08);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background: rgba(255, 255, 255, 0.06);
       backdrop-filter: blur(10px);
       color: #ffffff;
+      font-weight: 500;
     }
     
     input::placeholder {
-      color: rgba(255, 255, 255, 0.5);
+      color: rgba(255, 255, 255, 0.45);
     }
     
     input:focus {
       outline: none;
-      border-color: rgba(255, 255, 255, 0.4);
-      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.1);
       box-shadow: 
         0 0 0 4px rgba(255, 255, 255, 0.08),
-        0 4px 20px rgba(255, 255, 255, 0.1);
+        0 8px 32px rgba(255, 255, 255, 0.15);
+      transform: translateY(-1px);
     }
     
     input.valid {
-      border-color: rgba(16, 185, 129, 0.5);
-      background: rgba(16, 185, 129, 0.08);
+      border-color: rgba(16, 185, 129, 0.6);
+      background: rgba(16, 185, 129, 0.1);
     }
     
     input.invalid {
-      border-color: rgba(239, 68, 68, 0.5);
-      background: rgba(239, 68, 68, 0.08);
+      border-color: rgba(239, 68, 68, 0.6);
+      background: rgba(239, 68, 68, 0.1);
     }
     
-    /* ========================================
-       VALIDATION HINTS
-    ======================================== */
+    /* VALIDATION HINTS */
     .validation-hints {
-      margin-top: 12px;
-      padding: 14px;
-      background: rgba(255, 255, 255, 0.06);
+      margin-top: 14px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.04);
       backdrop-filter: blur(10px);
-      border-radius: 10px;
+      border-radius: 12px;
       font-size: 13px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
     
     .hint {
       display: flex;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 9px;
       color: rgba(255, 255, 255, 0.7);
-      transition: color 0.3s;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+      font-weight: 500;
     }
     
     .hint:last-child {
@@ -298,9 +296,10 @@
     
     .hint::before {
       content: '○';
-      margin-right: 8px;
+      margin-right: 10px;
       font-weight: bold;
-      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+      font-size: 16px;
+      filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.4));
     }
     
     .hint.valid::before {
@@ -311,46 +310,44 @@
       content: '✗';
     }
     
-    /* ========================================
-       CAPTCHA
-    ======================================== */
+    /* CAPTCHA */
     .captcha-section {
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.06);
       backdrop-filter: blur(15px);
-      padding: 20px;
-      border-radius: 14px;
-      margin-bottom: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      padding: 22px;
+      border-radius: 16px;
+      margin-bottom: 26px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
     }
     
     .captcha-label {
       font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 10px;
-      color: rgba(255, 255, 255, 0.9);
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: rgba(255, 255, 255, 0.95);
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     }
     
     .captcha-display {
-      background: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
-      padding: 18px;
-      border-radius: 12px;
+      padding: 20px;
+      border-radius: 14px;
       text-align: center;
-      margin-bottom: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
+      margin-bottom: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.25);
     }
     
     .captcha-code {
-      font-size: 32px;
-      font-weight: 700;
-      letter-spacing: 8px;
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: 10px;
       color: #ffffff;
       font-family: 'Courier New', monospace;
       user-select: none;
-      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+      text-shadow: 0 3px 15px rgba(0, 0, 0, 0.6);
     }
     
     .captcha-input-wrapper {
@@ -358,18 +355,18 @@
     }
     
     .captcha-input {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       color: #ffffff;
       text-align: center;
-      font-size: 18px;
-      font-weight: 600;
-      letter-spacing: 4px;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: 6px;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     }
     
     .captcha-input:focus {
-      border-color: rgba(255, 255, 255, 0.4);
+      border-color: rgba(255, 255, 255, 0.35);
       box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
     }
     
@@ -378,50 +375,50 @@
       right: 12px;
       top: 50%;
       transform: translateY(-50%);
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.12);
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.2);
       color: #ffffff;
       cursor: pointer;
-      font-size: 20px;
-      padding: 6px 10px;
-      border-radius: 8px;
-      transition: all 0.3s;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      font-size: 22px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
     }
     
     .refresh-captcha:hover {
-      background: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.2);
       transform: translateY(-50%) rotate(180deg);
+      box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
     }
     
-    /* ========================================
-       BOUTONS
-    ======================================== */
+    /* BOUTONS */
     button[type="submit"] {
       width: 100%;
-      padding: 16px;
+      padding: 17px;
       background: rgba(255, 255, 255, 0.15);
       backdrop-filter: blur(10px);
       color: white;
       border: 1px solid rgba(255, 255, 255, 0.25);
-      border-radius: 14px;
+      border-radius: 16px;
       font-size: 16px;
-      font-weight: 700;
+      font-weight: 800;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: 
-        0 8px 24px rgba(0, 0, 0, 0.2),
+        0 8px 28px rgba(0, 0, 0, 0.25),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     }
     
     button[type="submit"]:hover:not(:disabled) {
       background: rgba(255, 255, 255, 0.22);
       transform: translateY(-2px);
       box-shadow: 
-        0 12px 32px rgba(0, 0, 0, 0.3),
+        0 12px 40px rgba(0, 0, 0, 0.35),
         inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.35);
     }
     
     button[type="submit"]:active:not(:disabled) {
@@ -429,37 +426,34 @@
     }
     
     button[type="submit"]:disabled {
-      opacity: 0.6;
+      opacity: 0.5;
       cursor: not-allowed;
     }
     
-    /* ========================================
-       INFO BOX
-    ======================================== */
+    /* INFO BOX */
     .info-box {
-      background: rgba(59, 130, 246, 0.12);
+      background: rgba(59, 130, 246, 0.15);
       backdrop-filter: blur(10px);
-      border-left: 4px solid rgba(59, 130, 246, 0.6);
+      border-left: 4px solid rgba(59, 130, 246, 0.7);
       border: 1px solid rgba(59, 130, 246, 0.3);
-      padding: 14px 16px;
-      border-radius: 12px;
-      margin-bottom: 20px;
+      padding: 16px 18px;
+      border-radius: 14px;
+      margin-bottom: 22px;
       font-size: 13px;
-      color: rgba(255, 255, 255, 0.9);
-      line-height: 1.6;
-      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15);
+      color: rgba(255, 255, 255, 0.95);
+      line-height: 1.7;
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2);
     }
     
     .info-box strong {
       display: block;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       color: #ffffff;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+      font-size: 14px;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     }
     
-    /* ========================================
-       LOADING SPINNER
-    ======================================== */
+    /* SPINNER */
     .spinner {
       display: inline-block;
       width: 16px;
@@ -467,7 +461,7 @@
       border: 2px solid rgba(255, 255, 255, 0.3);
       border-top-color: white;
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      animation: spin 0.7s linear infinite;
       margin-left: 8px;
     }
     
@@ -475,11 +469,9 @@
       to { transform: rotate(360deg); }
     }
     
-    /* ========================================
-       SCROLLBAR
-    ======================================== */
+    /* SCROLLBAR */
     ::-webkit-scrollbar {
-      width: 8px;
+      width: 10px;
     }
     
     ::-webkit-scrollbar-track {
@@ -488,42 +480,38 @@
     
     ::-webkit-scrollbar-thumb {
       background: rgba(255, 255, 255, 0.2);
-      border-radius: 4px;
+      border-radius: 5px;
     }
     
     ::-webkit-scrollbar-thumb:hover {
       background: rgba(255, 255, 255, 0.3);
     }
     
-    /* ========================================
-       RESPONSIVE
-    ======================================== */
+    /* RESPONSIVE */
     @media (max-width: 600px) {
       .auth-card {
         padding: 35px 25px;
-        border-radius: 24px;
+        border-radius: 28px;
       }
       
       h1 {
-        font-size: 28px;
+        font-size: 30px;
       }
       
       .tab {
-        padding: 10px 8px;
-        font-size: 12px;
+        padding: 11px 10px;
+        font-size: 13px;
       }
       
       .captcha-code {
-        font-size: 28px;
-        letter-spacing: 6px;
+        font-size: 30px;
+        letter-spacing: 8px;
       }
     }
   </style>
 </head>
 <body>
-  <!-- ========================================
-       VIDÉO EN ARRIÈRE-PLAN
-  ======================================== -->
+  <!-- VIDÉO EN ARRIÈRE-PLAN -->
   <div class="video-background">
     <video autoplay muted loop playsinline>
       <source src="video.mp4" type="video/mp4">
@@ -531,38 +519,28 @@
   </div>
   <div class="video-overlay"></div>
   
-  <!-- ========================================
-       CONTAINER PRINCIPAL
-  ======================================== -->
+  <!-- CONTAINER PRINCIPAL -->
   <div class="main-container">
     <div class="auth-card">
       
-      <!-- ========================================
-           HEADER
-      ======================================== -->
+      <!-- HEADER -->
       <div class="header">
         <div class="logo">🎮</div>
         <h1>Harmonia</h1>
         <p class="subtitle">Plateforme de jeu sécurisée</p>
       </div>
       
-      <!-- ========================================
-           ONGLETS
-      ======================================== -->
+      <!-- ONGLETS -->
       <div class="tabs">
         <button class="tab active" onclick="switchTab('signup')">Inscription</button>
         <button class="tab" onclick="switchTab('login')">Connexion</button>
         <button class="tab" onclick="switchTab('forgot')">Mot de passe</button>
       </div>
       
-      <!-- ========================================
-           MESSAGES
-      ======================================== -->
+      <!-- MESSAGES -->
       <div id="message" class="message"></div>
       
-      <!-- ========================================
-           FORMULAIRE INSCRIPTION
-      ======================================== -->
+      <!-- FORMULAIRE INSCRIPTION -->
       <div id="signup" class="form-section active">
         <div class="info-box">
           <strong>📋 Règles d'inscription</strong>
@@ -570,7 +548,6 @@
         </div>
         
         <form onsubmit="handleSignup(event)" id="signup-form">
-          <!-- Prénom -->
           <div class="form-group">
             <label for="prenom">Prénom *</label>
             <input 
@@ -588,7 +565,6 @@
             </div>
           </div>
           
-          <!-- Nom -->
           <div class="form-group">
             <label for="nom">Nom *</label>
             <input 
@@ -606,7 +582,6 @@
             </div>
           </div>
           
-          <!-- Email -->
           <div class="form-group">
             <label for="signup-email">Email *</label>
             <input 
@@ -617,7 +592,6 @@
             >
           </div>
           
-          <!-- Mot de passe -->
           <div class="form-group">
             <label for="signup-password">Mot de passe *</label>
             <input 
@@ -637,7 +611,6 @@
             </div>
           </div>
           
-          <!-- Captcha -->
           <div class="captcha-section">
             <div class="captcha-label">🔒 Code de sécurité</div>
             <div class="captcha-display">
@@ -662,16 +635,13 @@
             </div>
           </div>
           
-          <!-- Bouton submit -->
           <button type="submit">
             <span id="signup-btn-text">Créer mon compte</span>
           </button>
         </form>
       </div>
       
-      <!-- ========================================
-           FORMULAIRE CONNEXION
-      ======================================== -->
+      <!-- FORMULAIRE CONNEXION -->
       <div id="login" class="form-section">
         <div class="info-box">
           <strong>🔐 Connexion sécurisée</strong>
@@ -679,7 +649,6 @@
         </div>
         
         <form onsubmit="handleLogin(event)" id="login-form">
-          <!-- Email -->
           <div class="form-group">
             <label for="login-email">Email *</label>
             <input 
@@ -690,7 +659,6 @@
             >
           </div>
           
-          <!-- Mot de passe -->
           <div class="form-group">
             <label for="login-password">Mot de passe *</label>
             <input 
@@ -701,7 +669,6 @@
             >
           </div>
           
-          <!-- Captcha -->
           <div class="captcha-section">
             <div class="captcha-label">🔒 Code de sécurité</div>
             <div class="captcha-display">
@@ -726,16 +693,13 @@
             </div>
           </div>
           
-          <!-- Bouton submit -->
           <button type="submit">
             <span id="login-btn-text">Se connecter</span>
           </button>
         </form>
       </div>
       
-      <!-- ========================================
-           FORMULAIRE MOT DE PASSE OUBLIÉ
-      ======================================== -->
+      <!-- FORMULAIRE MOT DE PASSE OUBLIÉ -->
       <div id="forgot" class="form-section">
         <div class="info-box">
           <strong>📧 Réinitialisation du mot de passe</strong>
@@ -743,7 +707,6 @@
         </div>
         
         <form onsubmit="handleForgotPassword(event)" id="forgot-form">
-          <!-- Email -->
           <div class="form-group">
             <label for="forgot-email">Email *</label>
             <input 
@@ -754,7 +717,6 @@
             >
           </div>
           
-          <!-- Captcha -->
           <div class="captcha-section">
             <div class="captcha-label">🔒 Code de sécurité</div>
             <div class="captcha-display">
@@ -779,7 +741,6 @@
             </div>
           </div>
           
-          <!-- Bouton submit -->
           <button type="submit">
             <span id="forgot-btn-text">Envoyer le lien</span>
           </button>
@@ -790,19 +751,15 @@
   </div>
   
   <script>
-    /* ========================================
-       CONFIGURATION
-    ======================================== */
-    const API_BASE = 'https://dfccebkmiebkqfwdudjg.supabase.co/functions/v1/auth';
+    /* CONFIGURATION API - UNE SEULE ROUTE */
+    const API_URL = 'https://dfccebkmiebkqfwdudjg.supabase.co/functions/v1/auth';
     
-    // Stockage des captchas
     const captchas = {
       signup: '',
       login: '',
       forgot: ''
     };
     
-    // Messages d'erreur
     const ERROR_MESSAGES = {
       100: '<strong>❌ Validation échouée</strong><br>Vérifiez que votre nom, prénom et mot de passe respectent toutes les règles affichées.',
       500: '<strong>⚠️ Email déjà utilisé</strong><br>Cet email est déjà enregistré. Essayez de vous connecter ou utilisez un autre email.',
@@ -811,9 +768,6 @@
       captcha: '<strong>🔒 Code de sécurité incorrect</strong><br>Le code que vous avez entré ne correspond pas.'
     };
     
-    /* ========================================
-       GESTION DES CAPTCHAS
-    ======================================== */
     function generateCaptcha(type) {
       const code = Math.floor(1000 + Math.random() * 9000).toString();
       captchas[type] = code;
@@ -826,26 +780,17 @@
       return input === captchas[type];
     }
     
-    /* ========================================
-       GESTION DES ONGLETS
-    ======================================== */
     function switchTab(tab) {
-      // Retirer les classes actives
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
       
-      // Ajouter les classes actives
       event.target.classList.add('active');
       document.getElementById(tab).classList.add('active');
       
-      // Masquer les messages et régénérer le captcha
       hideMessage();
       generateCaptcha(tab);
     }
     
-    /* ========================================
-       GESTION DES MESSAGES
-    ======================================== */
     function showMessage(text, type) {
       const msg = document.getElementById('message');
       msg.innerHTML = text;
@@ -857,15 +802,11 @@
       document.getElementById('message').classList.remove('show');
     }
     
-    /* ========================================
-       VALIDATION NOM/PRÉNOM
-    ======================================== */
     function validateName(input, hintsId) {
       const value = input.value;
       const hints = document.getElementById(hintsId);
       const len = value.length;
       
-      // Définir les règles de validation
       const rules = {
         length: len >= 2 && len <= 25,
         letters: /^[a-zA-ZÀ-ÿ]*$/.test(value),
@@ -873,26 +814,20 @@
         consonant: /[bcdfghjklmnpqrstvwxz]/i.test(value)
       };
       
-      // Mettre à jour les indicateurs visuels
       Object.keys(rules).forEach(rule => {
         const hint = hints.querySelector(`[data-rule="${rule}"]`);
         hint.className = 'hint ' + (rules[rule] ? 'valid' : 'invalid');
       });
       
-      // Appliquer la classe sur l'input
       const allValid = Object.values(rules).every(v => v);
       input.className = value ? (allValid ? 'valid' : 'invalid') : '';
     }
     
-    /* ========================================
-       VALIDATION MOT DE PASSE
-    ======================================== */
     function validatePassword(input) {
       const value = input.value;
       const hints = document.getElementById('password-hints');
       const len = value.length;
       
-      // Définir les règles de validation
       const rules = {
         length: len >= 8 && len <= 13,
         uppercase: /[A-Z]/.test(value),
@@ -902,47 +837,39 @@
         space: !/\s/.test(value)
       };
       
-      // Mettre à jour les indicateurs visuels
       Object.keys(rules).forEach(rule => {
         const hint = hints.querySelector(`[data-rule="${rule}"]`);
         hint.className = 'hint ' + (rules[rule] ? 'valid' : 'invalid');
       });
       
-      // Appliquer la classe sur l'input
       const allValid = Object.values(rules).every(v => v);
       input.className = value ? (allValid ? 'valid' : 'invalid') : '';
     }
     
-    /* ========================================
-       HANDLER INSCRIPTION
-    ======================================== */
     async function handleSignup(e) {
       e.preventDefault();
       hideMessage();
       
-      // Vérifier le captcha
       if (!verifyCaptcha('signup')) {
         showMessage(ERROR_MESSAGES.captcha, 'error');
         generateCaptcha('signup');
         return;
       }
       
-      // Récupérer les données du formulaire
       const data = {
+        action: 'signup',
         prenom: document.getElementById('prenom').value.trim(),
         nom: document.getElementById('nom').value.trim(),
         email: document.getElementById('signup-email').value.trim(),
         password: document.getElementById('signup-password').value
       };
       
-      // Afficher le spinner
       const btn = document.getElementById('signup-btn-text');
       const originalText = btn.innerHTML;
       btn.innerHTML = 'Création en cours... <span class="spinner"></span>';
       
       try {
-        // Envoyer la requête
-        const response = await fetch(`${API_BASE}/signup`, {
+        const response = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
@@ -951,21 +878,17 @@
         const result = await response.json();
         
         if (response.ok) {
-          // Succès
           showMessage(
             '<strong>✅ Inscription réussie !</strong><br>' + result.message, 
             'success'
           );
           
-          // Réinitialiser le formulaire
           document.getElementById('signup-form').reset();
           document.querySelectorAll('.hint').forEach(h => h.className = 'hint');
           document.querySelectorAll('input').forEach(i => i.className = '');
           
-          // Régénérer le captcha
           generateCaptcha('signup');
         } else {
-          // Erreur
           showMessage(
             ERROR_MESSAGES[result.code] || result.message, 
             'error'
@@ -973,45 +896,37 @@
           generateCaptcha('signup');
         }
       } catch (error) {
-        // Erreur réseau
         showMessage(
           '<strong>⚠️ Erreur réseau</strong><br>Impossible de se connecter au serveur.', 
           'error'
         );
       } finally {
-        // Restaurer le bouton
         btn.innerHTML = originalText;
       }
     }
     
-    /* ========================================
-       HANDLER CONNEXION
-    ======================================== */
     async function handleLogin(e) {
       e.preventDefault();
       hideMessage();
       
-      // Vérifier le captcha
       if (!verifyCaptcha('login')) {
         showMessage(ERROR_MESSAGES.captcha, 'error');
         generateCaptcha('login');
         return;
       }
       
-      // Récupérer les données du formulaire
       const data = {
+        action: 'login',
         email: document.getElementById('login-email').value.trim(),
         password: document.getElementById('login-password').value
       };
       
-      // Afficher le spinner
       const btn = document.getElementById('login-btn-text');
       const originalText = btn.innerHTML;
       btn.innerHTML = 'Connexion... <span class="spinner"></span>';
       
       try {
-        // Envoyer la requête
-        const response = await fetch(`${API_BASE}/login`, {
+        const response = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
@@ -1020,21 +935,17 @@
         const result = await response.json();
         
         if (response.ok) {
-          // Succès
           showMessage(
             '<strong>✅ Connexion réussie !</strong><br>Redirection vers votre tableau de bord...', 
             'success'
           );
           
-          // Stocker la session
           localStorage.setItem('session', JSON.stringify(result.session));
           
-          // Rediriger après 2 secondes
           setTimeout(() => {
             window.location.href = '/dashboard';
           }, 2000);
         } else {
-          // Erreur
           showMessage(
             ERROR_MESSAGES[result.code] || result.message, 
             'error'
@@ -1042,44 +953,36 @@
           generateCaptcha('login');
         }
       } catch (error) {
-        // Erreur réseau
         showMessage(
           '<strong>⚠️ Erreur réseau</strong><br>Impossible de se connecter au serveur.', 
           'error'
         );
       } finally {
-        // Restaurer le bouton
         btn.innerHTML = originalText;
       }
     }
     
-    /* ========================================
-       HANDLER MOT DE PASSE OUBLIÉ
-    ======================================== */
     async function handleForgotPassword(e) {
       e.preventDefault();
       hideMessage();
       
-      // Vérifier le captcha
       if (!verifyCaptcha('forgot')) {
         showMessage(ERROR_MESSAGES.captcha, 'error');
         generateCaptcha('forgot');
         return;
       }
       
-      // Récupérer les données du formulaire
       const data = {
+        action: 'forgot-password',
         email: document.getElementById('forgot-email').value.trim()
       };
       
-      // Afficher le spinner
       const btn = document.getElementById('forgot-btn-text');
       const originalText = btn.innerHTML;
       btn.innerHTML = 'Envoi... <span class="spinner"></span>';
       
       try {
-        // Envoyer la requête
-        const response = await fetch(`${API_BASE}/forgot-password`, {
+        const response = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
@@ -1088,19 +991,14 @@
         const result = await response.json();
         
         if (response.ok) {
-          // Succès
           showMessage(
             '<strong>✅ Email envoyé !</strong><br>Consultez votre boîte mail pour réinitialiser votre mot de passe.', 
             'success'
           );
           
-          // Réinitialiser le formulaire
           document.getElementById('forgot-form').reset();
-          
-          // Régénérer le captcha
           generateCaptcha('forgot');
         } else {
-          // Erreur
           showMessage(
             ERROR_MESSAGES[result.code] || result.message, 
             'error'
@@ -1108,24 +1006,19 @@
           generateCaptcha('forgot');
         }
       } catch (error) {
-        // Erreur réseau
         showMessage(
           '<strong>⚠️ Erreur réseau</strong><br>Impossible de se connecter au serveur.', 
           'error'
         );
       } finally {
-        // Restaurer le bouton
         btn.innerHTML = originalText;
       }
     }
     
-    /* ========================================
-       INITIALISATION
-    ======================================== */
-    // Générer les captchas au chargement de la page
+    // Initialisation
     generateCaptcha('signup');
     generateCaptcha('login');
     generateCaptcha('forgot');
   </script>
 </body>
-          </html>
+  </html>
