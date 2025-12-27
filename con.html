@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harmonia - Authentification Sécurisée</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+    
+    /* Vidéo en arrière-plan */
+    .video-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      overflow: hidden;
+    }
+    
+    .video-background video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .video-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.85) 0%, rgba(118, 75, 162, 0.85) 100%);
+      z-index: -1;
+    }
+    
+    /* Container principal */
+    .main-container {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 30px 20px;
+    }
+    
+    .auth-card {
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.3);
+      padding: 50px 45px;
+      max-width: 520px;
+      width: 100%;
+      animation: slideUp 0.6s ease;
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .logo {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+    
+    h1 {
+      color: #667eea;
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .subtitle {
+      color: #64748b;
+      font-size: 15px;
+    }
+    
+    /* Onglets */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 35px;
+      background: #f1f5f9;
+      padding: 6px;
+      border-radius: 12px;
+    }
+    
+    .tab {
+      flex: 1;
+      padding: 12px 16px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: #64748b;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    
+    .tab.active {
+      background: white;
+      color: #667eea;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    }
+    
+    /* Messages */
+    .message {
+      padding: 16px 20px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      display: none;
+      font-size: 14px;
+      line-height: 1.5;
+      animation: fadeIn 0.4s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .message.success {
+      background: #d1fae5;
+      color: #065f46;
+      border-left: 4px solid #10b981;
+    }
+    
+    .message.error {
+      background: #fee2e2;
+      color: #991b1b;
+      border-left: 4px solid #ef4444;
+    }
+    
+    .message.show {
+      display: block;
+    }
+    
+    /* Sections de formulaire */
+    .form-section {
+      display: none;
+    }
+    
+    .form-section.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+    
+    /* Formulaires */
+    .form-group {
+      margin-bottom: 24px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #1e293b;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .input-wrapper {
+      position: relative;
+    }
+    
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      background: #f8fafc;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+    
+    input.valid {
+      border-color: #10b981;
+      background: #f0fdf4;
+    }
+    
+    input.invalid {
+      border-color: #ef4444;
+      background: #fef2f2;
+    }
+    
+    /* Indicateurs de validation */
+    .validation-hints {
+      margin-top: 12px;
+      padding: 14px;
+      background: #f8fafc;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    
+    .hint {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      color: #64748b;
+      transition: color 0.3s;
+    }
+    
+    .hint:last-child {
+      margin-bottom: 0;
+    }
+    
+    .hint.valid {
+      color: #10b981;
+    }
+    
+    .hint.invalid {
+      color: #ef4444;
+    }
+    
+    .hint::before {
+      content: '○';
+      margin-right: 8px;
+      font-weight: bold;
+    }
+    
+    .hint.valid::before {
+      content: '✓';
+    }
+    
+    .hint.invalid::before {
+      content: '✗';
+    }
+    
+    /* Captcha */
+    .captcha-section {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      color: white;
+    }
+    
+    .captcha-label {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      opacity: 0.9;
+    }
+    
+    .captcha-display {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 18px;
+      border-radius: 10px;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    
+    .captcha-code {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: 8px;
+      color: #667eea;
+      font-family: 'Courier New', monospace;
+      user-select: none;
+    }
+    
+    .captcha-input-wrapper {
+      position: relative;
+    }
+    
+    .captcha-input {
+      background: rgba(255, 255, 255, 0.95);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      color: #1e293b;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 4px;
+    }
+    
+    .captcha-input:focus {
+      border-color: white;
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+    }
+    
+    .refresh-captcha {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #667eea;
+      cursor: pointer;
+      font-size: 20px;
+      padding: 4px 8px;
+      transition: transform 0.3s;
+    }
+    
+    .refresh-captcha:hover {
+      transform: translateY(-50%) rotate(180deg);
+    }
+    
+    /* Bouton submit */
+    button[type="submit"] {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    button[type="submit"]:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(102, 126, 234, 0.4);
+    }
+    
+    button[type="submit"]:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    
+    button[type="submit"]:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    /* Info box */
+    .info-box {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      padding: 14px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: #1e40af;
+      line-height: 1.6;
+    }
+    
+    .info-box strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+    
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-left: 8px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Responsive */
+    @media (max-width: 600px) {
+      .auth-card {
+        padding: 35px 25px;
+      }
+      
+      h1 {
+        font-size: 26px;
+      }
+      
+      .tab {
+        padding: 10px 8px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Vidéo en arrière-plan -->
+  <div class="video-background">
+    <video autoplay muted loop playsinline>
+      <source src="video.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="video-overlay"></div>
+  
+  <div class="main-container">
+    <div class="auth-card">
+      <!-- Header -->
+      <div class="header">
+        <div class="logo">🎮</div>
+        <h1>Harmonia</h1>
+        <p class="subtitle">Plateforme de jeu sécurisée</p>
+      </div>
+      
+      <!-- Onglets -->
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('signup')">Inscription</button>
+        <button class="tab" onclick="switchTab('login')">Connexion</button>
+        <button class="tab" onclick="switchTab('forgot')">Mot de passe</button>
+      </div>
+      
+      <!-- Messages -->
+      <div id="message" class="message"></div>
+      
+      <!-- INSCRIPTION -->
+      <div id="signup" class="form-section active">
+        <div class="info-box">
+          <strong>📋 Règles d'inscription</strong>
+          Nom et prénom : 2-25 lettres, voyelles et consonnes obligatoires. Mot de passe : 8-13 caractères avec majuscule, minuscule, chiffre et underscore (_).
+        </div>
+        
+        <form onsubmit="handleSignup(event)" id="signup-form">
+          <div class="form-group">
+            <label for="prenom">Prénom *</label>
+            <input type="text" id="prenom" required oninput="validateName(this, 'prenom-hints')">
+            <div id="prenom-hints" class="validation-hints">
+              <div class="hint" data-rule="length">2 à 25 lettres</div>
+              <div class="hint" data-rule="letters">Seulement des lettres</div>
+              <div class="hint" data-rule="vowel">Au moins 1 voyelle</div>
+              <div class="hint" data-rule="consonant">Au moins 1 consonne</div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="nom">Nom *</label>
+            <input type="text" id="nom" required oninput="validateName(this, 'nom-hints')">
+            <div id="nom-hints" class="validation-hints">
+              <div class="hint" data-rule="length">2 à 25 lettres</div>
+              <div class="hint" data-rule="letters">Seulement des lettres</div>
+              <div class="hint" data-rule="vowel">Au moins 1 voyelle</div>
+              <div class="hint" data-rule="consonant">Au moins 1 consonne</div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="signup-email">Email *</label>
+            <input type="email" id="signup-email" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="signup-password">Mot de passe *</label>
+            <input type="password" id="signup-password" required oninput="validatePassword(this)">
+            <div id="password-hints" class="validation-hints">
+              <div class="hint" data-rule="length">8 à 13 caractères</div>
+              <div class="hint" data-rule="uppercase">Au moins 1 majuscule</div>
+              <div class="hint" data-rule="lowercase">Au moins 1 minuscule</div>
+              <div class="hint" data-rule="number">Au moins 1 chiffre</div>
+              <div class="hint" data-rule="underscore">Au moins 1 underscore (_)</div>
+              <div class="hint" data-rule="space">Pas d'espaces</div>
+            </div>
+          </div>
+          
+          <!-- Captcha -->
+          <div class="captcha-section">
+            <div class="captcha-label">🔒 Code de sécurité</div>
+            <div class="captcha-display">
+              <div class="captcha-code" id="captcha-signup">----</div>
+            </div>
+            <div class="captcha-input-wrapper">
+              <input type="text" class="captcha-input" id="captcha-input-signup" placeholder="Entrez le code" maxlength="4" required>
+              <button type="button" class="refresh-captcha" onclick="generateCaptcha('signup')" title="Générer un nouveau code">⟳</button>
+            </div>
+          </div>
+          
+          <button type="submit">
+            <span id="signup-btn-text">Créer mon compte</span>
+          </button>
+        </form>
+      </div>
+      
+      <!-- CONNEXION -->
+      <div id="login" class="form-section">
+        <div class="info-box">
+          <strong>🔐 Connexion sécurisée</strong>
+          Utilisez vos identifiants pour accéder à votre compte.
+        </div>
+        
+        <form onsubmit="handleLogin(event)" id="login-form">
+          <div class="form-group">
+            <label for="login-email">Email *</label>
+            <input type="email" id="login-email" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="login-password">Mot de passe *</label>
+            <input type="password" id="login-password" required>
+          </div>
+          
+          <!-- Captcha -->
+          <div class="captcha-section">
+            <div class="captcha-label">🔒 Code de sécurité</div>
+            <div class="captcha-display">
+              <div class="captcha-code" id="captcha-login">----</div>
+            </div>
+            <div class="captcha-input-wrapper">
+              <input type="text" class="captcha-input" id="captcha-input-login" placeholder="Entrez le code" maxlength="4" required>
+              <button type="button" class="refresh-captcha" onclick="generateCaptcha('login')" title="Générer un nouveau code">⟳</button>
+            </div>
+          </div>
+          
+          <button type="submit">
+            <span id="login-btn-text">Se connecter</span>
+          </button>
+        </form>
+      </div>
+      
+      <!-- MOT DE PASSE OUBLIÉ -->
+      <div id="forgot" class="form-section">
+        <div class="info-box">
+          <strong>📧 Réinitialisation du mot de passe</strong>
+          Entrez votre email pour recevoir un lien de réinitialisation.
+        </div>
+        
+        <form onsubmit="handleForgotPassword(event)" id="forgot-form">
+          <div class="form-group">
+            <label for="forgot-email">Email *</label>
+            <input type="email" id="forgot-email" required>
+          </div>
+          
+          <!-- Captcha -->
+          <div class="captcha-section">
+            <div class="captcha-label">🔒 Code de sécurité</div>
+            <div class="captcha-display">
+              <div class="captcha-code" id="captcha-forgot">----</div>
+            </div>
+            <div class="captcha-input-wrapper">
+              <input type="text" class="captcha-input" id="captcha-input-forgot" placeholder="Entrez le code" maxlength="4" required>
+              <button type="button" class="refresh-captcha" onclick="generateCaptcha('forgot')" title="Générer un nouveau code">⟳</button>
+            </div>
+          </div>
+          
+          <button type="submit">
+            <span id="forgot-btn-text">Envoyer le lien</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const API_BASE = 'https://dfccebkmiebkqfwdudjg.supabase.co/functions/v1/auth';
+    
+    // Stockage des captchas
+    const captchas = {
+      signup: '',
+      login: '',
+      forgot: ''
+    };
+    
+    // Générer un captcha aléatoire
+    function generateCaptcha(type) {
+      const code = Math.floor(1000 + Math.random() * 9000).toString();
+      captchas[type] = code;
+      document.getElementById(`captcha-${type}`).textContent = code;
+      document.getElementById(`captcha-input-${type}`).value = '';
+    }
+    
+    // Initialiser les captchas
+    generateCaptcha('signup');
+    generateCaptcha('login');
+    generateCaptcha('forgot');
+    
+    // Gestion des onglets
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(tab).classList.add('active');
+      hideMessage();
+      
+      // Régénérer le captcha
+      generateCaptcha(tab);
+    }
+    
+    // Messages
+    function showMessage(text, type) {
+      const msg = document.getElementById('message');
+      msg.innerHTML = text;
+      msg.className = `message ${type} show`;
+      setTimeout(() => hideMessage(), 8000);
+    }
+    
+    function hideMessage() {
+      document.getElementById('message').classList.remove('show');
+    }
+    
+    // Validation du nom/prénom
+    function validateName(input, hintsId) {
+      const value = input.value;
+      const hints = document.getElementById(hintsId);
+      const len = value.length;
+      
+      // Règles
+      const rules = {
+        length: len >= 2 && len <= 25,
+        letters: /^[a-zA-ZÀ-ÿ]*$/.test(value),
+        vowel: /[aeiouyàâäéèêëïîôùûüÿæœ]/i.test(value),
+        consonant: /[bcdfghjklmnpqrstvwxz]/i.test(value)
+      };
+      
+      // Mettre à jour les hints
+      Object.keys(rules).forEach(rule => {
+        const hint = hints.querySelector(`[data-rule="${rule}"]`);
+        hint.className = 'hint ' + (rules[rule] ? 'valid' : 'invalid');
+      });
+      
+      // Classe sur l'input
+      const allValid = Object.values(rules).every(v => v);
+      input.className = value ? (allValid ? 'valid' : 'invalid') : '';
+    }
+    
+    // Validation du mot de passe
+    function validatePassword(input) {
+      const value = input.value;
+      const hints = document.getElementById('password-hints');
+      const len = value.length;
+      
+      const rules = {
+        length: len >= 8 && len <= 13,
+        uppercase: /[A-Z]/.test(value),
+        lowercase: /[a-z]/.test(value),
+        number: /[0-9]/.test(value),
+        underscore: /_/.test(value),
+        space: !/\s/.test(value)
+      };
+      
+      Object.keys(rules).forEach(rule => {
+        const hint = hints.querySelector(`[data-rule="${rule}"]`);
+        hint.className = 'hint ' + (rules[rule] ? 'valid' : 'invalid');
+      });
+      
+      const allValid = Object.values(rules).every(v => v);
+      input.className = value ? (allValid ? 'valid' : 'invalid') : '';
+    }
+    
+    // Vérification du captcha
+    function verifyCaptcha(type) {
+      const input = document.getElementById(`captcha-input-${type}`).value;
+      return input === captchas[type];
+    }
+    
+    // Messages d'erreur détaillés
+    const errorMessages = {
+      100: '<strong>❌ Validation échouée</strong><br>Vérifiez que votre nom, prénom et mot de passe respectent toutes les règles affichées ci-dessus.',
+      500: '<strong>⚠️ Email déjà utilisé</strong><br>Cet email est déjà enregistré. Essayez de vous connecter ou utilisez un autre email.',
+      510: '<strong>🚫 Accès refusé</strong><br>Votre domaine n\'est pas autorisé à accéder à ce service. Contactez l\'administrateur.',
+      206: '<strong>🔒 Identifiants incorrects</strong><br>L\'email ou le mot de passe est incorrect. Vérifiez vos informations ou réinitialisez votre mot de passe.',
+      captcha: '<strong>🔒 Code de sécurité incorrect</strong><br>Le code que vous avez entré ne correspond pas. Veuillez réessayer.'
+    };
+    
+    // Inscription
+    async function handleSignup(e) {
+      e.preventDefault();
+      hideMessage();
+      
+      // Vérifier le captcha
+      if (!verifyCaptcha('signup')) {
+        showMessage(errorMessages.captcha, 'error');
+        generateCaptcha('signup');
+        return;
+      }
+      
+      const btn = document.getElementById('signup-btn-text');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = 'Création en cours... <span class="spinner"></span>';
+      
+      const data = {
+        prenom: document.getElementById('prenom').value.trim(),
+        nom: document.getElementById('nom').value.trim(),
+        email: document.getElementById('signup-email').value.trim(),
+        password: document.getElementById('signup-password').value
+      };
+      
+      try {
+        const response = await fetch(`${API_BASE}/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          showMessage('<strong>✅ Inscription réussie !</strong><br>' + result.message, 'success');
+          document.getElementById('signup-form').reset();
+          generateCaptcha('signup');
+        } else {
+          showMessage(errorMessages[result.code] || result.message, 'error');
+          generateCaptcha('signup');
+        }
+      } catch (error) {
+        showMessage('<strong>⚠️ Erreur réseau</strong><br>Impossible de se connecter au serveur. Vérifiez votre connexion.', 'error');
+      } finally {
+        btn.innerHTML = originalText;
+      }
+    }
+    
+    // Connexion
+    async function handleLogin(e) {
+      e.preventDefault();
+      hideMessage();
+      
+      if (!verifyCaptcha('login')) {
+        showMessage(errorMessages.captcha, 'error');
+        generateCaptcha('login');
+        return;
+      }
+      
+      const btn = document.getElementById('login-btn-text');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = 'Connexion... <span class="spinner"></span>';
+      
+      const data = {
+        email: document.getElementById('login-email').value.trim(),
+        password: document.getElementById('login-password').value
+      };
+      
+      try {
+        const response = await fetch(`${API_BASE}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          showMessage('<strong>✅ Connexion réussie !</strong><br>Redirection vers votre tableau de bord...', 'success');
+          localStorage.setItem('session', JSON.stringify(result.session));
+          setTimeout(() => window.location.href = '/dashboard', 2000);
+        } else {
+          showMessage(errorMessages[result.code] || result.message, 'error');
+          generateCaptcha('login');
+        }
+      } catch (error) {
+        showMessage('<strong>⚠️ Erreur réseau</strong><br>Impossible de se connecter au serveur.', 'error');
+      } finally {
+        btn.innerHTML = originalText;
+      }
+    }
+    
+    // Mot de passe oublié
+    async function handleForgotPassword(e) {
+      e.preventDefault();
+      hideMessage();
+      
+      if (!verifyCaptcha('forgot')) {
+        showMessage(errorMessages.captcha, 'error');
+        generateCaptcha('forgot');
+        return;
+      }
+      
+      const btn = document.getElementById('forgot-btn-text');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = 'Envoi... <span class="spinner"></span>';
+      
+      const data = {
+        email: document.getElementById('forgot-email').value.trim()
+      };
+      
+      try {
+        const response = await fetch(`${API_BASE}/forgot-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          showMessage('<strong>✅ Email envoyé !</strong><br>Consultez votre boîte mail pour réinitialiser votre mot de passe.', 'success');
+          document.getElementById('forgot-form').reset();
+          generateCaptcha('forgot');
+        } else {
+          showMessage(errorMessages[result.code] || result.message, 'error');
+          generateCaptcha('forgot');
+        }
+      } catch (error) {
+        showMessage('<strong>⚠️ Erreur réseau</strong><br>Impossible de se connecter au serveur.', 'error');
+      } finally {
+        btn.innerHTML = originalText;
+      }
+    }
+  </script>
+</body>
+  </html>
