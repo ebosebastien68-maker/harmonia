@@ -931,6 +931,7 @@
       }
       
       const data = {
+        action: 'signup',
         prenom: document.getElementById('prenom').value.trim(),
         nom: document.getElementById('nom').value.trim(),
         email: document.getElementById('signup-email').value.trim(),
@@ -942,7 +943,7 @@
       btn.innerHTML = 'Création en cours... <span class="spinner"></span>';
       
       try {
-        const response = await fetch(API_URL + '/signup', {
+        const response = await fetch(API_URL, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json'
@@ -991,6 +992,7 @@
       }
       
       const data = {
+        action: 'login',
         email: document.getElementById('login-email').value.trim(),
         password: document.getElementById('login-password').value
       };
@@ -1000,7 +1002,7 @@
       btn.innerHTML = 'Connexion... <span class="spinner"></span>';
       
       try {
-        const response = await fetch(API_URL + '/login', {
+        const response = await fetch(API_URL, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json'
@@ -1049,6 +1051,7 @@
       }
       
       const data = {
+        action: 'forgot-password',
         email: document.getElementById('forgot-email').value.trim()
       };
       
@@ -1057,7 +1060,7 @@
       btn.innerHTML = 'Envoi... <span class="spinner"></span>';
       
       try {
-        const response = await fetch(API_URL + '/forgot-password', {
+        const response = await fetch(API_URL, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json'
@@ -1098,4 +1101,4 @@
     generateCaptcha('forgot');
   </script>
 </body>
-  </html>
+    </html>
