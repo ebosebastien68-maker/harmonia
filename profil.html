@@ -683,21 +683,30 @@
         const session = loadSession();
         if (!session || !session.user) return;
         
-        // Charger le profil
-        const profileData = await callEdgeFunction('load_profile', {
-          user_id: session.user.id
-        });
+        // D'abord, on doit récupérer l'user_id depuis auth_uid
+        // On utilise l'action load_wallet qui va automatiquement récupérer l'utilisateur authentifié
+        const walletData = await callEdgeFunction('load_wallet');
         
-        if (!profileData.success || !profileData.user) {
-          showMessage('Utilisateur non trouvé', 'error');
+        if (!walletData.success) {
+          showMessage('Erreur de chargement', 'error');
           return;
         }
         
-        currentUser = profileData.user;
+        // Maintenant on a besoin de récupérer les infos complètes
+        // On va créer un objet currentUser basique depuis la session
+        currentUser = {
+          id: session.user.id,
+          email: session.user.email,
+          username: session.user.user_metadata?.prenom + '_' + session.user.user_metadata?.nom || 'utilisateur_inconnu',
+          avatar_url: session.user.user_metadata?.avatar_url || null
+        };
         
-        // Extraire prénom et nom du username
-        const [prenom, nom] = currentUser.username.split('_');
-        const displayName = `${prenom.charAt(0).toUpperCase() + prenom.slice(1)} ${nom.charAt(0).toUpperCase() + nom.slice(1)}`;
+        // Extraire prénom et nom du username ou des metadata
+        const prenom = session.user.user_metadata?.prenom || 'Utilisateur';
+        const nom = session.user.user_metadata?.nom || '';
+        const displayName = nom ? 
+          `${prenom.charAt(0).toUpperCase() + prenom.slice(1)} ${nom.charAt(0).toUpperCase() + nom.slice(1)}` :
+          prenom.charAt(0).toUpperCase() + prenom.slice(1);
         
         document.getElementById('userName').textContent = displayName;
         
@@ -706,8 +715,10 @@
           document.getElementById('userAvatar').innerHTML = `<img src="${currentUser.avatar_url}" alt="Avatar">`;
         }
         
-        // Charger le wallet
-        await loadWallet();
+        // Afficher le wallet qu'on a déjà chargé
+        if (walletData.wallet) {
+          document.getElementById('walletBalance').textContent = `${walletData.wallet.balance} €`;
+        }
         
         // Charger les posts
         await loadPosts();
