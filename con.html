@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Harmonia</title>
+  <title>Harmonia - Authentification Sécurisée</title>
   <style>
     * {
       margin: 0;
@@ -598,9 +598,9 @@
       
       <!-- HEADER -->
       <div class="header">
-        <div class="logo">🏆</div>
+        <div class="logo">🎮</div>
         <h1>Harmonia</h1>
-        <p class="subtitle">🪩</p>
+        <p class="subtitle">Plateforme de jeu sécurisée</p>
       </div>
       
       <!-- ONGLETS -->
@@ -1014,15 +1014,16 @@
         
         if (response.ok) {
           showMessage(
-            '<strong>✅ Connexion réussie !</strong><br>Redirection vers votre tableau de bord...', 
+            '<strong>✅ Connexion réussie !</strong><br>Redirection vers votre profil...', 
             'success'
           );
           
           localStorage.setItem('session', JSON.stringify(result.session));
           
+          // Redirection vers profil.html
           setTimeout(() => {
-            window.location.href = '/dashboard';
-          }, 2000);
+            window.location.href = 'profil.html';
+          }, 1500);
         } else {
           showMessage(
             ERROR_MESSAGES[result.code] || result.message, 
@@ -1099,6 +1100,23 @@
     generateCaptcha('signup');
     generateCaptcha('login');
     generateCaptcha('forgot');
+    
+    // Vérifier si l'utilisateur est déjà connecté
+    window.addEventListener('DOMContentLoaded', () => {
+      const session = localStorage.getItem('session');
+      if (session) {
+        try {
+          const sessionData = JSON.parse(session);
+          if (sessionData.user && sessionData.access_token) {
+            // L'utilisateur est déjà connecté, rediriger vers profil
+            window.location.href = 'profil.html';
+          }
+        } catch (error) {
+          // Session invalide, la supprimer
+          localStorage.removeItem('session');
+        }
+      }
+    });
   </script>
 </body>
-    </html>
+              </html>
