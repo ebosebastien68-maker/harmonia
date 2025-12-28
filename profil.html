@@ -604,7 +604,7 @@
         const authUid = session.user?.id;
         
         if (!authUid) {
-          window.location.href = 'auth.html';
+          window.location.href = 'con.html';
           return;
         }
         
@@ -618,7 +618,7 @@
         
         if (!users || users.length === 0) {
           showMessage('Utilisateur non trouvé', 'error');
-          setTimeout(() => window.location.href = 'auth.html', 2000);
+          setTimeout(() => window.location.href = 'con.html', 2000);
           return;
         }
         
@@ -941,4 +941,4 @@
     });
   </script>
 </body>
-</html>
+                                               </html>
