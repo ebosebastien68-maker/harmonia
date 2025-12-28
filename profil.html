@@ -57,13 +57,6 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
     }
     
-    .avatar img {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-    
     .avatar-buttons {
       display: flex;
       gap: 10px;
@@ -86,12 +79,8 @@
       background: rgba(16, 185, 129, 0.3);
       color: white;
       border: 1px solid rgba(16, 185, 129, 0.5);
-    }
-    
-    .avatar-btn.add:hover {
-      background: rgba(16, 185, 129, 0.5);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+      opacity: 0.5;
+      cursor: not-allowed;
     }
     
     .avatar-btn.delete {
@@ -104,21 +93,6 @@
       background: rgba(239, 68, 68, 0.5);
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
-    }
-    
-    .avatar-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    
-    .avatar-btn:disabled:hover {
-      transform: none;
-      box-shadow: none;
-    }
-    
-    /* FILE INPUT HIDDEN */
-    #avatarFileInput {
-      display: none;
     }
     
     /* NOM PRÉNOM */
@@ -230,13 +204,6 @@
       justify-content: center;
       font-size: 18px;
       color: white;
-    }
-    
-    .post-author-avatar img {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      object-fit: cover;
     }
     
     .post-author-name {
@@ -383,7 +350,6 @@
       font-size: 14px;
       resize: vertical;
       min-height: 60px;
-      font-family: inherit;
     }
     
     .comment-input::placeholder {
@@ -446,15 +412,6 @@
     .replies {
       margin-left: 30px;
       margin-top: 15px;
-    }
-    
-    .reply {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 10px;
     }
     
     /* GAME BUTTON */
@@ -551,10 +508,8 @@
         <div class="avatar" id="userAvatar">👤</div>
       </div>
       
-      <input type="file" id="avatarFileInput" accept="image/*">
-      
       <div class="avatar-buttons">
-        <button class="avatar-btn add" id="addAvatarBtn">
+        <button class="avatar-btn add" disabled title="Disponible prochainement">
           📷 Ajouter
         </button>
         <button class="avatar-btn delete" id="deleteAvatarBtn">
@@ -611,11 +566,11 @@
   
   <script>
     // CONFIGURATION
-    const EDGE_FUNCTION_URL = 'https://dfccebkmiebkqfwdudjg.supabase.co/functions/v1/profil';
+    const DB_PROXY_URL = 'https://dfccebkmiebkqfwdudjg.supabase.co/functions/v1/db-proxy';
+    const DELETE_AVATAR_URL = 'https://dfccebkmiebkqfwdudjg.supabase.co/functions/v1/delete';
     
     let currentUser = null;
     let currentPostId = null;
-    let currentSession = null;
     let allPosts = [];
     
     // UTILITAIRES
@@ -626,146 +581,62 @@
       setTimeout(() => msg.classList.remove('show'), 5000);
     }
     
-    function getAuthHeaders() {
-      if (!currentSession) {
-        console.error('❌ Pas de session');
-        return {};
-      }
-      
-      // La session Supabase stocke le token dans 'access_token'
-      const token = currentSession.access_token;
-      
-      if (!token) {
-        console.error('❌ Pas de token dans la session:', currentSession);
-        return {};
-      }
-      
-      console.log('✅ Token trouvé:', token.substring(0, 20) + '...');
-      return {
-        'Authorization': `Bearer ${token}`
-      };
-    }
-    
-    async function callEdgeFunction(action, data = {}) {
+    async function dbQuery(request) {
       try {
-        const headers = {
-          'Content-Type': 'application/json',
-          ...getAuthHeaders()
-        };
-        
-        console.log(`🚀 Appel Edge Function: ${action}`, {
-          data,
-          hasAuth: !!headers.Authorization
-        });
-        
-        const response = await fetch(EDGE_FUNCTION_URL, {
+        const response = await fetch(DB_PROXY_URL, {
           method: 'POST',
-          headers,
-          body: JSON.stringify({ action, ...data })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(request)
         });
-        
         const result = await response.json();
-        
-        console.log(`📥 Réponse ${action}:`, {
-          status: response.status,
-          ok: response.ok,
-          result
-        });
-        
-        if (!response.ok) {
-          throw new Error(result.message || 'Erreur serveur');
-        }
-        
-        return result;
+        if (!response.ok) throw new Error(result.message);
+        return result.data;
       } catch (error) {
-        console.error('❌ Erreur Edge Function:', error);
+        console.error('Erreur DB:', error);
         throw error;
-      }
-    }
-    
-    // CHARGER SESSION
-    function loadSession() {
-      const sessionStr = localStorage.getItem('session');
-      
-      if (!sessionStr) {
-        console.error('❌ Aucune session dans localStorage');
-        window.location.href = 'con.html';
-        return null;
-      }
-      
-      try {
-        const session = JSON.parse(sessionStr);
-        
-        console.log('📦 Session chargée:', {
-          user_id: session.user?.id,
-          email: session.user?.email,
-          has_access_token: !!session.access_token,
-          token_preview: session.access_token ? session.access_token.substring(0, 20) + '...' : 'AUCUN'
-        });
-        
-        // Vérifier que la session a tous les champs nécessaires
-        if (!session.user || !session.user.id || !session.access_token) {
-          console.error('❌ Session invalide ou incomplète:', session);
-          localStorage.removeItem('session');
-          window.location.href = 'con.html';
-          return null;
-        }
-        
-        currentSession = session;
-        return session;
-        
-      } catch (error) {
-        console.error('❌ Erreur parsing session:', error);
-        localStorage.removeItem('session');
-        window.location.href = 'con.html';
-        return null;
       }
     }
     
     // CHARGER PROFIL UTILISATEUR
     async function loadUserProfile() {
       try {
-        const session = loadSession();
-        if (!session || !session.user) return;
+        const session = JSON.parse(localStorage.getItem('session') || '{}');
+        const authUid = session.user?.id;
         
-        // ✅ Charger directement le wallet avec l'authentification
-        const walletData = await callEdgeFunction('load_wallet');
-        
-        if (!walletData.success) {
-          showMessage('Erreur de chargement du wallet', 'error');
-          // Ne pas bloquer, continuer quand même
+        if (!authUid) {
+          window.location.href = 'con.html';
+          return;
         }
         
-        // ✅ Créer l'objet currentUser depuis la session
-        currentUser = {
-          id: session.user.id,
-          email: session.user.email,
-          username: session.user.user_metadata?.username || 
-                    `${session.user.user_metadata?.prenom}_${session.user.user_metadata?.nom}` || 
-                    'utilisateur',
-          avatar_url: session.user.user_metadata?.avatar_url || null,
-          prenom: session.user.user_metadata?.prenom || 'Utilisateur',
-          nom: session.user.user_metadata?.nom || ''
-        };
+        // Récupérer l'utilisateur (SANS single: true)
+        const users = await dbQuery({
+          operation: 'select',
+          table: 'users',
+          columns: 'id, username, email, avatar_url',
+          filters: [{ column: 'auth_uid', operator: 'eq', value: authUid }]
+        });
         
-        // Extraire prénom et nom
-        const prenom = currentUser.prenom;
-        const nom = currentUser.nom;
-        const displayName = nom ? 
-          `${prenom.charAt(0).toUpperCase() + prenom.slice(1)} ${nom.charAt(0).toUpperCase() + nom.slice(1)}` :
-          prenom.charAt(0).toUpperCase() + prenom.slice(1);
+        if (!users || users.length === 0) {
+          showMessage('Utilisateur non trouvé', 'error');
+          setTimeout(() => window.location.href = 'con.html', 2000);
+          return;
+        }
+        
+        currentUser = users[0]; // Prendre le premier résultat
+        
+        // Extraire prénom et nom du username
+        const [prenom, nom] = currentUser.username.split('_');
+        const displayName = `${prenom.charAt(0).toUpperCase() + prenom.slice(1)} ${nom.charAt(0).toUpperCase() + nom.slice(1)}`;
         
         document.getElementById('userName').textContent = displayName;
         
         // Avatar
         if (currentUser.avatar_url) {
-          document.getElementById('userAvatar').innerHTML = `<img src="${currentUser.avatar_url}" alt="Avatar">`;
+          document.getElementById('userAvatar').innerHTML = `<img src="${currentUser.avatar_url}" alt="Avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
         }
         
-        // Afficher le wallet si chargé
-        if (walletData && walletData.wallet) {
-          document.getElementById('walletBalance').textContent = `${walletData.wallet.balance} €`;
-        }
+        // Charger le wallet
+        await loadWallet(currentUser.id);
         
         // Charger les posts
         await loadPosts();
@@ -777,12 +648,17 @@
     }
     
     // CHARGER WALLET
-    async function loadWallet() {
+    async function loadWallet(userId) {
       try {
-        const walletData = await callEdgeFunction('load_wallet');
+        const wallets = await dbQuery({
+          operation: 'select',
+          table: 'wallet',
+          columns: 'balance',
+          filters: [{ column: 'user_id', operator: 'eq', value: userId }]
+        });
         
-        if (walletData.success && walletData.wallet) {
-          document.getElementById('walletBalance').textContent = `${walletData.wallet.balance} €`;
+        if (wallets && wallets.length > 0) {
+          document.getElementById('walletBalance').textContent = `${wallets[0].balance} €`;
         }
       } catch (error) {
         console.error('Erreur wallet:', error);
@@ -792,15 +668,15 @@
     // CHARGER TOUS LES POSTS
     async function loadPosts() {
       try {
-        const postsData = await callEdgeFunction('load_posts', {
-          limit: 20,
-          offset: 0
+        const posts = await dbQuery({
+          operation: 'select',
+          table: 'posts_actualite',
+          columns: '*',
+          order: { column: 'created_at', ascending: false }
         });
         
-        if (postsData.success && postsData.posts) {
-          allPosts = postsData.posts;
-          displayPosts(postsData.posts);
-        }
+        allPosts = posts;
+        displayPosts(posts);
       } catch (error) {
         console.error('Erreur posts:', error);
         document.getElementById('postsContainer').innerHTML = '<p style="color:white;">Aucune actualité pour le moment</p>';
@@ -808,7 +684,7 @@
     }
     
     // AFFICHER LES POSTS
-    async function displayPosts(posts) {
+    function displayPosts(posts) {
       const container = document.getElementById('postsContainer');
       
       if (!posts || posts.length === 0) {
@@ -819,38 +695,66 @@
       container.innerHTML = posts.map(post => `
         <div class="post-card" onclick="openCommentsModal('${post.id}')">
           <div class="post-header">
-            <div class="post-author-avatar">${post.author_avatar ? `<img src="${post.author_avatar}" alt="Avatar">` : '👤'}</div>
-            <div class="post-author-name">${post.author_username || 'Admin'}</div>
+            <div class="post-author-avatar">👤</div>
+            <div class="post-author-name">Admin</div>
           </div>
           <div class="post-title">${post.title}</div>
           <div class="post-content">${post.content}</div>
           <div class="post-footer">
             <div>
-              <button class="love-btn" onclick="toggleLove(event, '${post.id}')" id="love-btn-${post.id}">❤️</button>
-              <span class="love-count" id="love-${post.id}">${post.love_count || 0}</span>
+              <button class="love-btn" onclick="toggleLove(event, '${post.id}')">❤️</button>
+              <span class="love-count" id="love-${post.id}">0</span>
             </div>
-            <div class="comment-count" id="comments-${post.id}">${post.comment_count || 0} commentaires</div>
+            <div class="comment-count" id="comments-${post.id}">0 commentaires</div>
           </div>
         </div>
       `).join('');
       
-      // Vérifier les loves pour chaque post
-      for (const post of posts) {
-        await checkUserLove(post.id);
-      }
+      // Charger les stats de chaque post
+      posts.forEach(post => loadPostStats(post.id));
     }
     
-    // VÉRIFIER SI L'UTILISATEUR A AIMÉ
-    async function checkUserLove(postId) {
+    // CHARGER STATS D'UN POST
+    async function loadPostStats(postId) {
       try {
-        const loveData = await callEdgeFunction('check_love', { post_id: postId });
+        // Réactions
+        const reactions = await dbQuery({
+          operation: 'select',
+          table: 'post_actualite_reactions',
+          columns: 'id',
+          filters: [{ column: 'post_id', operator: 'eq', value: postId }]
+        });
         
-        if (loveData.success && loveData.loved) {
-          const btn = document.getElementById(`love-btn-${postId}`);
-          if (btn) btn.classList.add('loved');
+        document.getElementById(`love-${postId}`).textContent = reactions.length;
+        
+        // Commentaires
+        const comments = await dbQuery({
+          operation: 'select',
+          table: 'post_actualite_comments',
+          columns: 'id',
+          filters: [{ column: 'post_id', operator: 'eq', value: postId }]
+        });
+        
+        document.getElementById(`comments-${postId}`).textContent = `${comments.length} commentaires`;
+        
+        // Vérifier si l'utilisateur a déjà aimé
+        const userReaction = await dbQuery({
+          operation: 'select',
+          table: 'post_actualite_reactions',
+          columns: 'id',
+          filters: [
+            { column: 'post_id', operator: 'eq', value: postId },
+            { column: 'user_id', operator: 'eq', value: currentUser.id }
+          ]
+        });
+        
+        if (userReaction.length > 0) {
+          const loveBtn = document.querySelector(`[onclick="toggleLove(event, '${postId}')"]`);
+          if (loveBtn) loveBtn.classList.add('loved');
         }
+        
       } catch (error) {
-        console.error('Erreur check love:', error);
+        console.error('Erreur stats:', error);
       }
     }
     
@@ -859,20 +763,35 @@
       event.stopPropagation();
       
       try {
-        const loveData = await callEdgeFunction('toggle_love', { post_id: postId });
+        const btn = event.target;
+        const isLoved = btn.classList.contains('loved');
         
-        if (loveData.success) {
-          const btn = event.target;
-          const countEl = document.getElementById(`love-${postId}`);
-          
-          if (loveData.action === 'added') {
-            btn.classList.add('loved');
-            countEl.textContent = parseInt(countEl.textContent) + 1;
-          } else {
-            btn.classList.remove('loved');
-            countEl.textContent = Math.max(0, parseInt(countEl.textContent) - 1);
-          }
+        if (isLoved) {
+          // Supprimer
+          await dbQuery({
+            operation: 'delete',
+            table: 'post_actualite_reactions',
+            filters: [
+              { column: 'post_id', operator: 'eq', value: postId },
+              { column: 'user_id', operator: 'eq', value: currentUser.id }
+            ]
+          });
+          btn.classList.remove('loved');
+        } else {
+          // Ajouter
+          await dbQuery({
+            operation: 'insert',
+            table: 'post_actualite_reactions',
+            data: {
+              post_id: postId,
+              user_id: currentUser.id
+            }
+          });
+          btn.classList.add('loved');
         }
+        
+        // Rafraîchir les stats
+        await loadPostStats(postId);
         
       } catch (error) {
         console.error('Erreur love:', error);
@@ -891,51 +810,48 @@
     function closeCommentsModal() {
       document.getElementById('commentsModal').classList.remove('show');
       currentPostId = null;
-      document.getElementById('commentInput').value = '';
     }
     
     // CHARGER COMMENTAIRES
     async function loadComments(postId) {
       try {
-        const commentsData = await callEdgeFunction('load_comments', { post_id: postId });
+        const comments = await dbQuery({
+          operation: 'select',
+          table: 'post_actualite_comments',
+          columns: '*',
+          filters: [{ column: 'post_id', operator: 'eq', value: postId }],
+          order: { column: 'created_at', ascending: false }
+        });
         
         const container = document.getElementById('commentsContainer');
         
-        if (!commentsData.success || !commentsData.comments || commentsData.comments.length === 0) {
+        if (!comments || comments.length === 0) {
           container.innerHTML = '<p style="color:white;text-align:center;">Aucun commentaire</p>';
           return;
         }
         
-        container.innerHTML = commentsData.comments.map(comment => {
-          const username = comment.users?.username || 'Utilisateur';
-          const avatar = comment.users?.avatar_url;
+        container.innerHTML = await Promise.all(comments.map(async comment => {
+          const users = await dbQuery({
+            operation: 'select',
+            table: 'users',
+            columns: 'username',
+            filters: [{ column: 'id', operator: 'eq', value: comment.user_id }]
+          });
           
-          let repliesHtml = '';
-          if (comment.replies && comment.replies.length > 0) {
-            repliesHtml = `<div class="replies">` + comment.replies.map(reply => {
-              const replyUsername = reply.users?.username || 'Utilisateur';
-              return `
-                <div class="reply">
-                  <div class="comment-author">${replyUsername}</div>
-                  <div class="comment-text">${reply.content}</div>
-                </div>
-              `;
-            }).join('') + `</div>`;
-          }
+          const username = users && users.length > 0 ? users[0].username : 'Utilisateur';
           
           return `
             <div class="comment">
               <div class="comment-author">${username}</div>
               <div class="comment-text">${comment.content}</div>
               <button class="comment-reply-btn" onclick="replyToComment('${comment.id}')">Répondre</button>
-              ${repliesHtml}
+              <div class="replies" id="replies-${comment.id}"></div>
             </div>
           `;
-        }).join('');
+        })).then(html => html.join(''));
         
       } catch (error) {
         console.error('Erreur commentaires:', error);
-        document.getElementById('commentsContainer').innerHTML = '<p style="color:white;text-align:center;">Erreur de chargement</p>';
       }
     }
     
@@ -950,120 +866,26 @@
       }
       
       try {
-        const commentData = await callEdgeFunction('add_comment', {
-          post_id: currentPostId,
-          content
+        await dbQuery({
+          operation: 'insert',
+          table: 'post_actualite_comments',
+          data: {
+            post_id: currentPostId,
+            user_id: currentUser.id,
+            content
+          }
         });
         
-        if (commentData.success) {
-          input.value = '';
-          await loadComments(currentPostId);
-          
-          // Mettre à jour le compteur
-          const countEl = document.getElementById(`comments-${currentPostId}`);
-          if (countEl) {
-            const currentCount = parseInt(countEl.textContent);
-            countEl.textContent = `${currentCount + 1} commentaires`;
-          }
-          
-          showMessage('Commentaire ajouté !', 'success');
-        }
+        input.value = '';
+        await loadComments(currentPostId);
+        await loadPostStats(currentPostId);
+        showMessage('Commentaire ajouté !', 'success');
         
       } catch (error) {
         console.error('Erreur commentaire:', error);
         showMessage('Erreur lors de l\'ajout du commentaire', 'error');
       }
     }
-    
-    // RÉPONDRE À UN COMMENTAIRE
-    async function replyToComment(commentId) {
-      const content = prompt('Votre réponse :');
-      
-      if (!content || !content.trim()) {
-        return;
-      }
-      
-      try {
-        const replyData = await callEdgeFunction('add_reply', {
-          comment_id: commentId,
-          content: content.trim()
-        });
-        
-        if (replyData.success) {
-          await loadComments(currentPostId);
-          showMessage('Réponse ajoutée !', 'success');
-        }
-        
-      } catch (error) {
-        console.error('Erreur réponse:', error);
-        showMessage('Erreur lors de l\'ajout de la réponse', 'error');
-      }
-    }
-    
-    // UPLOAD AVATAR
-    document.getElementById('addAvatarBtn').addEventListener('click', () => {
-      document.getElementById('avatarFileInput').click();
-    });
-    
-    document.getElementById('avatarFileInput').addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      
-      if (!file) return;
-      
-      // Vérifier la taille (max 2MB)
-      if (file.size > 2 * 1024 * 1024) {
-        showMessage('Le fichier est trop volumineux (max 2 MB)', 'error');
-        return;
-      }
-      
-      // Vérifier le type
-      if (!file.type.startsWith('image/')) {
-        showMessage('Veuillez sélectionner une image', 'error');
-        return;
-      }
-      
-      try {
-        // Convertir en base64
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-          const base64 = event.target.result;
-          
-          showMessage('Upload en cours...', 'success');
-          
-          try {
-            const uploadData = await callEdgeFunction('upload_avatar', {
-              avatar_base64: base64,
-              filename: file.name
-            });
-            
-            if (uploadData.success && uploadData.avatar_url) {
-              // Mettre à jour l'affichage
-              document.getElementById('userAvatar').innerHTML = `<img src="${uploadData.avatar_url}" alt="Avatar">`;
-              currentUser.avatar_url = uploadData.avatar_url;
-              
-              showMessage('Photo de profil mise à jour avec succès !', 'success');
-            }
-            
-          } catch (error) {
-            console.error('Erreur upload:', error);
-            showMessage(error.message || 'Erreur lors de l\'upload', 'error');
-          }
-        };
-        
-        reader.onerror = () => {
-          showMessage('Erreur lors de la lecture du fichier', 'error');
-        };
-        
-        reader.readAsDataURL(file);
-        
-      } catch (error) {
-        console.error('Erreur traitement fichier:', error);
-        showMessage('Erreur lors du traitement du fichier', 'error');
-      }
-      
-      // Réinitialiser l'input
-      e.target.value = '';
-    });
     
     // SUPPRIMER AVATAR
     document.getElementById('deleteAvatarBtn').addEventListener('click', async () => {
@@ -1077,28 +899,34 @@
       }
       
       try {
-        // Pour la suppression, on va utiliser un update avec avatar_url = null
-        // via l'Edge Function (vous devrez ajouter cette action si nécessaire)
-        // Pour l'instant, on simule la suppression côté client
+        const response = await fetch(DELETE_AVATAR_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: currentUser.id })
+        });
         
-        showMessage('Fonctionnalité de suppression en cours de développement', 'error');
+        const result = await response.json();
         
-        // Code à décommenter quand l'action delete_avatar sera disponible :
-        /*
-        const deleteData = await callEdgeFunction('delete_avatar');
-        
-        if (deleteData.success) {
-          document.getElementById('userAvatar').innerHTML = '👤';
-          currentUser.avatar_url = null;
-          showMessage('Photo de profil supprimée avec succès', 'success');
+        if (!response.ok) {
+          throw new Error(result.message || 'Erreur lors de la suppression');
         }
-        */
+        
+        // Mettre à jour l'affichage
+        document.getElementById('userAvatar').innerHTML = '👤';
+        currentUser.avatar_url = null;
+        
+        showMessage('Photo de profil supprimée avec succès', 'success');
         
       } catch (error) {
         console.error('Erreur suppression avatar:', error);
         showMessage(error.message || 'Erreur lors de la suppression', 'error');
       }
     });
+    
+    // RÉPONDRE À UN COMMENTAIRE (fonction placeholder pour plus tard)
+    function replyToComment(commentId) {
+      showMessage('Fonctionnalité disponible prochainement', 'error');
+    }
     
     // INITIALISATION
     window.addEventListener('DOMContentLoaded', () => {
@@ -1113,4 +941,4 @@
     });
   </script>
 </body>
-  </html>
+</html>
