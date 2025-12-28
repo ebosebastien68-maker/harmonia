@@ -1,595 +1,1115 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Harmonia - Révélez Votre Talent au Monde Entier</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow-x: hidden;
-            background: #000;
-            color: #fff;
-        }
-
-        /* Background Images */
-        .bg-top {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            background-image: url('1.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            z-index: -2;
-            opacity: 0.4;
-        }
-
-        .bg-bottom {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 50vh;
-            background-image: url('0.png');
-            background-size: cover;
-            background-position: center bottom;
-            background-repeat: no-repeat;
-            z-index: -1;
-            opacity: 0.3;
-        }
-
-        /* Navigation */
-        nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background: linear-gradient(135deg, rgba(138,43,226,0.95), rgba(75,0,130,0.95));
-            padding: 1.2rem 5%;
-            z-index: 1000;
-            box-shadow: 0 4px 20px rgba(138,43,226,0.5);
-            backdrop-filter: blur(10px);
-        }
-
-        nav .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 2rem;
-            font-weight: bold;
-            background: linear-gradient(45deg, #ff0080, #ff8c00, #40e0d0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 0 30px rgba(255,0,128,0.5);
-        }
-
-        .nav-btn {
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #ff0080, #ff8c00);
-            border: none;
-            border-radius: 50px;
-            color: white;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(255,0,128,0.4);
-        }
-
-        .nav-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 25px rgba(255,0,128,0.6);
-        }
-
-        /* Hero Section */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 120px 5% 60px;
-            position: relative;
-        }
-
-        .hero-content h1 {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
-            background: linear-gradient(45deg, #ff0080, #ff8c00, #40e0d0, #7b68ee);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: gradient 3s ease infinite;
-            background-size: 300% 300%;
-        }
-
-        @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .hero-content p {
-            font-size: 1.5rem;
-            margin-bottom: 2rem;
-            color: #e0e0e0;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-        }
-
-        .cta-primary {
-            padding: 18px 50px;
-            background: linear-gradient(135deg, #ff0080, #ff8c00);
-            border: none;
-            border-radius: 50px;
-            color: white;
-            font-size: 1.3rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 6px 30px rgba(255,0,128,0.5);
-            margin: 10px;
-        }
-
-        .cta-primary:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 40px rgba(255,0,128,0.7);
-        }
-
-        /* Content Section */
-        .content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 80px 5%;
-            position: relative;
-            z-index: 1;
-        }
-
-        .section {
-            margin-bottom: 100px;
-            background: rgba(0,0,0,0.7);
-            border-radius: 30px;
-            padding: 60px;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(138,43,226,0.3);
-            box-shadow: 0 10px 40px rgba(138,43,226,0.3);
-        }
-
-        .section h2 {
-            font-size: 3rem;
-            margin-bottom: 2rem;
-            background: linear-gradient(45deg, #ff0080, #40e0d0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-align: center;
-        }
-
-        .section p {
-            font-size: 1.3rem;
-            line-height: 1.8;
-            color: #e0e0e0;
-            margin-bottom: 1.5rem;
-        }
-
-        .image-container {
-            text-align: center;
-            margin: 40px 0;
-        }
-
-        .image-container img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 20px;
-            box-shadow: 0 10px 50px rgba(138,43,226,0.5);
-            transition: transform 0.3s;
-        }
-
-        .image-container img:hover {
-            transform: scale(1.02);
-        }
-
-        /* Features Grid */
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin: 60px 0;
-        }
-
-        .feature-card {
-            background: linear-gradient(135deg, rgba(138,43,226,0.2), rgba(75,0,130,0.2));
-            padding: 40px;
-            border-radius: 20px;
-            border: 2px solid rgba(138,43,226,0.4);
-            transition: all 0.3s;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 50px rgba(138,43,226,0.6);
-            border-color: #ff0080;
-        }
-
-        .feature-card h3 {
-            font-size: 1.8rem;
-            margin-bottom: 1rem;
-            color: #40e0d0;
-        }
-
-        .feature-card p {
-            font-size: 1.1rem;
-            color: #d0d0d0;
-        }
-
-        /* CTA Sections */
-        .cta-section {
-            text-align: center;
-            padding: 60px 0;
-        }
-
-        .highlight {
-            color: #ff8c00;
-            font-weight: bold;
-        }
-
-        /* Footer */
-        footer {
-            background: linear-gradient(135deg, rgba(138,43,226,0.95), rgba(75,0,130,0.95));
-            padding: 40px 5%;
-            text-align: center;
-            margin-top: 100px;
-        }
-
-        footer p {
-            font-size: 1.1rem;
-            margin-bottom: 20px;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero-content h1 {
-                font-size: 2.5rem;
-            }
-            
-            .hero-content p {
-                font-size: 1.2rem;
-            }
-            
-            .section {
-                padding: 40px 30px;
-            }
-            
-            .section h2 {
-                font-size: 2rem;
-            }
-            
-            .logo {
-                font-size: 1.5rem;
-            }
-            
-            .nav-btn, .cta-primary {
-                padding: 12px 25px;
-                font-size: 1rem;
-            }
-        }
-
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .fade-in {
-            animation: fadeInUp 1s ease-out;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon Profil - Harmonia</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    /* HEADER PROFIL */
+    .profile-header {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 40px;
+      margin-bottom: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+    
+    /* PHOTO DE PROFIL */
+    .avatar-container {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+    
+    .avatar {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      object-fit: cover;
+      background: rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 60px;
+      color: white;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    
+    .avatar-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 15px;
+    }
+    
+    .avatar-btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      backdrop-filter: blur(10px);
+    }
+    
+    .avatar-btn.add {
+      background: rgba(16, 185, 129, 0.3);
+      color: white;
+      border: 1px solid rgba(16, 185, 129, 0.5);
+    }
+    
+    .avatar-btn.add:hover {
+      background: rgba(16, 185, 129, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+    
+    .avatar-btn.delete {
+      background: rgba(239, 68, 68, 0.3);
+      color: white;
+      border: 1px solid rgba(239, 68, 68, 0.5);
+    }
+    
+    .avatar-btn.delete:hover {
+      background: rgba(239, 68, 68, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    }
+    
+    .avatar-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .avatar-btn:disabled:hover {
+      transform: none;
+      box-shadow: none;
+    }
+    
+    /* FILE INPUT HIDDEN */
+    #avatarFileInput {
+      display: none;
+    }
+    
+    /* NOM PRÉNOM */
+    .user-name {
+      font-size: 28px;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* WALLET */
+    .wallet {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 16px;
+      padding: 20px;
+      display: inline-block;
+      margin-top: 15px;
+    }
+    
+    .wallet-label {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    
+    .wallet-balance {
+      font-size: 32px;
+      font-weight: 900;
+      color: #fbbf24;
+      text-shadow: 0 2px 10px rgba(251, 191, 36, 0.5);
+    }
+    
+    /* SECTION ACTUALITÉS */
+    .section-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 20px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    .posts-container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 30px;
+      margin-bottom: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    
+    .posts-scroll {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      padding-bottom: 15px;
+      scroll-behavior: smooth;
+    }
+    
+    .posts-scroll::-webkit-scrollbar {
+      height: 8px;
+    }
+    
+    .posts-scroll::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+    
+    .posts-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+    }
+    
+    /* POST CARD */
+    .post-card {
+      min-width: 320px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .post-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    }
+    
+    .post-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+    
+    .post-author-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: white;
+    }
+    
+    .post-author-avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    
+    .post-author-name {
+      font-weight: 700;
+      color: white;
+      font-size: 14px;
+    }
+    
+    .post-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 10px;
+    }
+    
+    .post-content {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 15px;
+      max-height: 80px;
+      overflow: hidden;
+    }
+    
+    .post-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 15px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .love-btn {
+      background: transparent;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      transition: all 0.3s;
+      filter: grayscale(1);
+    }
+    
+    .love-btn.loved {
+      filter: grayscale(0);
+      animation: heartBeat 0.3s;
+    }
+    
+    @keyframes heartBeat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+    }
+    
+    .love-count {
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    
+    .comment-count {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    /* POP-UP COMMENTAIRES */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .modal.show {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 24px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 80vh;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+    
+    .modal-header {
+      padding: 25px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: white;
+    }
+    
+    .modal-close {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      font-size: 24px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .modal-close:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: rotate(90deg);
+    }
+    
+    .modal-body {
+      padding: 25px;
+      max-height: 50vh;
+      overflow-y: auto;
+    }
+    
+    .comment-input-section {
+      padding: 20px 25px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .comment-input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      color: white;
+      font-size: 14px;
+      resize: vertical;
+      min-height: 60px;
+      font-family: inherit;
+    }
+    
+    .comment-input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .comment-submit {
+      margin-top: 10px;
+      padding: 12px 24px;
+      background: rgba(16, 185, 129, 0.3);
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      color: white;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .comment-submit:hover {
+      background: rgba(16, 185, 129, 0.5);
+      transform: translateY(-2px);
+    }
+    
+    .comment {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .comment-author {
+      font-weight: 700;
+      color: white;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    
+    .comment-text {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+    
+    .comment-reply-btn {
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    
+    .comment-reply-btn:hover {
+      color: white;
+    }
+    
+    .replies {
+      margin-left: 30px;
+      margin-top: 15px;
+    }
+    
+    .reply {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    
+    /* GAME BUTTON */
+    .game-button {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 30px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: block;
+    }
+    
+    .game-button:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    }
+    
+    .game-icon {
+      font-size: 64px;
+      margin-bottom: 15px;
+    }
+    
+    .game-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: white;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* LOADING */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: white;
+      font-size: 18px;
+    }
+    
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 15px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* MESSAGE */
+    .message {
+      padding: 15px 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      display: none;
+    }
+    
+    .message.show {
+      display: block;
+    }
+    
+    .message.success {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      color: white;
+    }
+    
+    .message.error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      color: white;
+    }
+  </style>
 </head>
 <body>
-    <!-- Background Images -->
-    <div class="bg-top"></div>
-    <div class="bg-bottom"></div>
-
-    <!-- Navigation -->
-    <nav>
-        <div class="container">
-            <div class="logo">✨ HARMONIA</div>
-            <button class="nav-btn" onclick="window.location.href='con.html'">Rejoignez-Nous</button>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-content fade-in">
-            <h1>HARMONIA</h1>
-            <p>La Plateforme Mondiale des Talents Extraordinaires</p>
-            <p>Révélez • Brillez • Triomphez • Prospérez</p>
-            <button class="cta-primary" onclick="window.location.href='con.html'">Démarrez Votre Ascension</button>
-        </div>
-    </section>
-
-    <!-- Content -->
-    <div class="content">
-        <!-- Section 1: Vision -->
-        <section class="section fade-in">
-            <h2>🌍 Une Vision Planétaire du Talent</h2>
-            <p>
-                <span class="highlight">Harmonia</span> transcende les frontières et réunit les <span class="highlight">esprits brillants</span>, 
-                les <span class="highlight">mains habiles</span>, les <span class="highlight">âmes créatives</span> et les <span class="highlight">stratèges visionnaires</span> 
-                du monde entier. Nous sommes la destination ultime pour tous ceux qui aspirent à l'excellence, peu importe leur domaine d'expertise.
-            </p>
-            <p>
-                Que vous soyez <span class="highlight">artisan virtuose</span>, <span class="highlight">créateur numérique</span>, 
-                <span class="highlight">champion du gaming</span>, <span class="highlight">entrepreneur innovant</span>, 
-                <span class="highlight">artiste passionné</span>, <span class="highlight">développeur génial</span>, 
-                <span class="highlight">designer exceptionnel</span>, ou <span class="highlight">professionnel accompli</span> 
-                dans n'importe quel secteur — <span class="highlight">votre place est ici</span>.
-            </p>
-            
-            <div class="image-container">
-                <img src="2.png" alt="Talents du monde entier">
-            </div>
-
-            <div class="cta-section">
-                <button class="cta-primary" onclick="window.location.href='con.html'">Inscrivez-Vous Maintenant</button>
-            </div>
-        </section>
-
-        <!-- Section 2: Competitions -->
-        <section class="section fade-in">
-            <h2>🏆 Des Compétitions Prestigieuses et Lucratives</h2>
-            <p>
-                Harmonia organise des <span class="highlight">concours internationaux</span> d'envergure mondiale où chaque participant 
-                a l'opportunité de démontrer son <span class="highlight">savoir-faire exceptionnel</span>, son <span class="highlight">talent unique</span> 
-                et sa <span class="highlight">maîtrise incomparable</span>.
-            </p>
-            <p>
-                Nos compétitions couvrent <span class="highlight">tous les secteurs imaginables</span> : artisanat traditionnel et moderne, 
-                technologies de pointe, arts visuels et performatifs, e-sport et gaming, entrepreneuriat et innovation, 
-                design et architecture, musique et composition, cuisine gastronomique, mode et stylisme, 
-                photographie et vidéographie, littérature et écriture créative, sciences et recherche, 
-                développement logiciel, marketing digital, et bien plus encore.
-            </p>
-
-            <div class="features">
-                <div class="feature-card">
-                    <h3>🎮 Gaming & E-Sport</h3>
-                    <p>Affrontez les meilleurs joueurs mondiaux dans des tournois spectaculaires avec des récompenses exceptionnelles.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>🎨 Arts & Création</h3>
-                    <p>Exposez votre génie artistique devant un jury international et un public passionné de millions de personnes.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>🔧 Artisanat & Métiers</h3>
-                    <p>Valorisez votre expertise technique et votre savoir-faire ancestral ou innovant sur la scène mondiale.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>💻 Tech & Innovation</h3>
-                    <p>Présentez vos innovations révolutionnaires et solutions technologiques devant des investisseurs influents.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>🎭 Performance & Spectacle</h3>
-                    <p>Captivez un public mondial avec vos talents de performer dans tous les arts de la scène.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>🏢 Business & Entrepreneuriat</h3>
-                    <p>Dévoilez vos stratégies gagnantes et projets ambitieux pour remporter financement et reconnaissance.</p>
-                </div>
-            </div>
-
-            <div class="image-container">
-                <img src="3.png" alt="Compétitions internationales">
-            </div>
-
-            <div class="cta-section">
-                <button class="cta-primary" onclick="window.location.href='con.html'">Participez aux Concours</button>
-            </div>
-        </section>
-
-        <!-- Section 3: Rewards -->
-        <section class="section fade-in">
-            <h2>💎 Des Récompenses Généreuses et Prestigieuses</h2>
-            <p>
-                Chez Harmonia, nous croyons fermement que le <span class="highlight">talent mérite reconnaissance</span> 
-                et <span class="highlight">rétribution substantielle</span>. C'est pourquoi nous offrons des 
-                <span class="highlight">récompenses financières extraordinaires</span> qui changent véritablement des vies.
-            </p>
-            <p>
-                Nos lauréats reçoivent non seulement des <span class="highlight">prix en espèces considérables</span>, 
-                mais également une <span class="highlight">visibilité internationale inestimable</span>, des 
-                <span class="highlight">opportunités de partenariats lucratifs</span>, un 
-                <span class="highlight">mentorat d'experts renommés</span>, l'accès à un 
-                <span class="highlight">réseau professionnel d'élite</span>, et des 
-                <span class="highlight">possibilités de carrière exceptionnelles</span>.
-            </p>
-            <p>
-                Les vainqueurs d'Harmonia rejoignent une <span class="highlight">communauté prestigieuse</span> 
-                de talents d'exception et bénéficient d'un <span class="highlight">tremplin sans précédent</span> 
-                pour propulser leur carrière vers des sommets inimaginables.
-            </p>
-
-            <div class="cta-section">
-                <button class="cta-primary" onclick="window.location.href='con.html'">Commencez Votre Voyage</button>
-            </div>
-        </section>
-
-        <!-- Section 4: Community -->
-        <section class="section fade-in">
-            <h2>🌟 Une Communauté Mondiale d'Excellence</h2>
-            <p>
-                Rejoindre Harmonia, c'est intégrer une <span class="highlight">famille internationale</span> 
-                de <span class="highlight">passionnés déterminés</span>, <span class="highlight">créateurs ambitieux</span>, 
-                <span class="highlight">innovateurs audacieux</span> et <span class="highlight">professionnels talentueux</span> 
-                qui partagent votre soif de réussite et d'accomplissement.
-            </p>
-            <p>
-                Notre plateforme favorise les <span class="highlight">échanges enrichissants</span>, 
-                les <span class="highlight">collaborations fructueuses</span>, le 
-                <span class="highlight">partage de connaissances précieuses</span> et la 
-                <span class="highlight">création de synergies puissantes</span> entre talents complémentaires.
-            </p>
-
-            <div class="image-container">
-                <img src="4.png" alt="Communauté mondiale">
-            </div>
-
-            <p>
-                Vous aurez l'opportunité de <span class="highlight">networker avec des leaders d'industrie</span>, 
-                <span class="highlight">apprendre des meilleurs</span>, <span class="highlight">établir des partenariats stratégiques</span> 
-                et <span class="highlight">construire votre legacy</span> aux côtés d'individus exceptionnels du monde entier.
-            </p>
-
-            <div class="cta-section">
-                <button class="cta-primary" onclick="window.location.href='con.html'">Rejoignez la Communauté</button>
-            </div>
-        </section>
-
-        <!-- Section 5: Process -->
-        <section class="section fade-in">
-            <h2>🚀 Un Processus Simple et Transparent</h2>
-            <p>
-                Participer aux compétitions Harmonia est d'une <span class="highlight">simplicité déconcertante</span> :
-            </p>
-            <p>
-                <strong>1. Inscription Rapide</strong> — Créez votre profil en quelques minutes et présentez votre parcours exceptionnel.
-            </p>
-            <p>
-                <strong>2. Sélection de Concours</strong> — Choisissez parmi nos nombreuses compétitions celle qui correspond 
-                parfaitement à votre expertise et vos ambitions.
-            </p>
-            <p>
-                <strong>3. Soumission de Votre Talent</strong> — Présentez votre travail, votre création, votre projet 
-                ou votre performance selon les critères établis.
-            </p>
-            <p>
-                <strong>4. Évaluation Professionnelle</strong> — Un jury d'experts internationaux reconnus 
-                analyse minutieusement chaque participation avec équité et professionnalisme.
-            </p>
-            <p>
-                <strong>5. Révélation des Gagnants</strong> — Les lauréats sont annoncés publiquement 
-                et célébrés lors d'événements prestigieux retransmis mondialement.
-            </p>
-            <p>
-                <strong>6. Réception des Récompenses</strong> — Les vainqueurs reçoivent leurs prix substantiels 
-                et commencent leur ascension vers de nouveaux horizons professionnels.
-            </p>
-
-            <div class="cta-section">
-                <button class="cta-primary" onclick="window.location.href='con.html'">Débutez Maintenant</button>
-            </div>
-        </section>
-
-        <!-- Section 6: Why Harmonia -->
-        <section class="section fade-in">
-            <h2>💫 Pourquoi Choisir Harmonia ?</h2>
-            <p>
-                <span class="highlight">Harmonia</span> se distingue comme la plateforme de référence mondiale pour le talent 
-                grâce à notre <span class="highlight">engagement inébranlable</span> envers l'excellence, 
-                notre <span class="highlight">équité absolue</span> dans les évaluations, 
-                notre <span class="highlight">transparence totale</span> dans les processus, 
-                et nos <span class="highlight">récompenses généreuses authentiques</span>.
-            </p>
-            <p>
-                Nous offrons une <span class="highlight">visibilité sans précédent</span> à l'échelle planétaire, 
-                une <span class="highlight">crédibilité internationale</span> immédiate, 
-                des <span class="highlight">opportunités de croissance exponentielles</span>, 
-                et un <span class="highlight">accompagnement personnalisé</span> tout au long de votre parcours.
-            </p>
-            <p>
-                Avec <span class="highlight">Harmonia</span>, vous ne participez pas seulement à un concours — 
-                vous embarquez dans une <span class="highlight">aventure transformatrice</span> qui propulsera 
-                votre carrière, élargira vos horizons et concrétisera vos ambitions les plus audacieuses.
-            </p>
-            <p>
-                Chaque année, des <span class="highlight">milliers de participants</span> du monde entier 
-                font confiance à Harmonia pour révéler leur potentiel, gagner une reconnaissance méritée, 
-                et accéder à des opportunités qui changent véritablement leur destinée professionnelle.
-            </p>
-
-            <div class="cta-section">
-                <button class="cta-primary" onclick="window.location.href='con.html'">Inscrivez-Vous Aujourd'hui</button>
-            </div>
-        </section>
-
-        <!-- Final CTA -->
-        <section class="section fade-in" style="text-align: center; background: linear-gradient(135deg, rgba(255,0,128,0.2), rgba(255,140,0,0.2));">
-            <h2>🎯 Votre Moment est Venu</h2>
-            <p style="font-size: 1.5rem; margin: 30px 0;">
-                Ne laissez pas votre talent rester dans l'ombre. Le monde attend de découvrir ce que vous avez à offrir.
-            </p>
-            <p style="font-size: 1.3rem; margin: 30px 0;">
-                Rejoignez <span class="highlight">Harmonia</span> dès maintenant et commencez votre voyage 
-                vers la reconnaissance internationale et le succès mérité.
-            </p>
-            <button class="cta-primary" onclick="window.location.href='con.html'" style="font-size: 1.5rem; padding: 25px 60px;">
-                🌟 Inscrivez-Vous Maintenant 🌟
-            </button>
-        </section>
+  
+  <div class="container">
+    
+    <!-- MESSAGE -->
+    <div id="message" class="message"></div>
+    
+    <!-- PROFIL HEADER -->
+    <div class="profile-header">
+      <div class="avatar-container">
+        <div class="avatar" id="userAvatar">👤</div>
+      </div>
+      
+      <input type="file" id="avatarFileInput" accept="image/*">
+      
+      <div class="avatar-buttons">
+        <button class="avatar-btn add" id="addAvatarBtn">
+          📷 Ajouter
+        </button>
+        <button class="avatar-btn delete" id="deleteAvatarBtn">
+          🗑️ Supprimer
+        </button>
+      </div>
+      
+      <div class="user-name" id="userName">Chargement...</div>
+      
+      <div class="wallet">
+        <div class="wallet-label">💰 Solde</div>
+        <div class="wallet-balance" id="walletBalance">0 €</div>
+      </div>
     </div>
-
-    <!-- Footer -->
-    <footer>
-        <p><strong>HARMONIA</strong> — La Plateforme Mondiale des Talents Extraordinaires</p>
-        <p>Révélant l'Excellence Planétaire Depuis 2024</p>
-        <button class="cta-primary" onclick="window.location.href='con.html'">Rejoignez Notre Communauté</button>
-        <p style="margin-top: 30px; font-size: 0.9rem; opacity: 0.8;">
-            © 2024 Harmonia. Tous droits réservés. Propulsant les talents vers l'infini.
-        </p>
-    </footer>
-
-    <script>
-        // Smooth scroll animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -100px 0px'
+    
+    <!-- POSTS ACTUALITÉS -->
+    <div class="posts-container">
+      <h2 class="section-title">📰 Actualités</h2>
+      <div class="posts-scroll" id="postsContainer">
+        <div class="loading">
+          <div class="spinner"></div>
+          Chargement des actualités...
+        </div>
+      </div>
+    </div>
+    
+    <!-- BOUTON JEU -->
+    <a href="vraifaux.html" class="game-button">
+      <div class="game-icon">🎮</div>
+      <div class="game-title">Jouer au Vrai ou Faux</div>
+    </a>
+    
+  </div>
+  
+  <!-- MODAL COMMENTAIRES -->
+  <div class="modal" id="commentsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">💬 Commentaires</div>
+        <button class="modal-close" onclick="closeCommentsModal()">×</button>
+      </div>
+      <div class="modal-body" id="commentsContainer">
+        <!-- Commentaires dynamiques -->
+      </div>
+      <div class="comment-input-section">
+        <textarea 
+          class="comment-input" 
+          id="commentInput" 
+          placeholder="Écrire un commentaire..."></textarea>
+        <button class="comment-submit" onclick="submitComment()">Envoyer</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // CONFIGURATION
+    const EDGE_FUNCTION_URL = 'https://dfccebkmiebkqfwdudjg.supabase.co/functions/v1/profil';
+    
+    let currentUser = null;
+    let currentPostId = null;
+    let currentSession = null;
+    let allPosts = [];
+    
+    // UTILITAIRES
+    function showMessage(text, type) {
+      const msg = document.getElementById('message');
+      msg.textContent = text;
+      msg.className = `message ${type} show`;
+      setTimeout(() => msg.classList.remove('show'), 5000);
+    }
+    
+    function getAuthHeaders() {
+      if (!currentSession) {
+        console.error('❌ Pas de session');
+        return {};
+      }
+      
+      // La session Supabase stocke le token dans 'access_token'
+      const token = currentSession.access_token;
+      
+      if (!token) {
+        console.error('❌ Pas de token dans la session:', currentSession);
+        return {};
+      }
+      
+      console.log('✅ Token trouvé:', token.substring(0, 20) + '...');
+      return {
+        'Authorization': `Bearer ${token}`
+      };
+    }
+    
+    async function callEdgeFunction(action, data = {}) {
+      try {
+        const headers = {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders()
         };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, observerOptions);
-
-        document.querySelectorAll('.section').forEach(section => {
-            section.style.opacity = '0';
-            section.style.transform = 'translateY(30px)';
-            section.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-            observer.observe(section);
+        
+        console.log(`🚀 Appel Edge Function: ${action}`, {
+          data,
+          hasAuth: !!headers.Authorization
         });
-
-        // Smooth scrolling for all links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            });
+        
+        const response = await fetch(EDGE_FUNCTION_URL, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ action, ...data })
         });
-    </script>
+        
+        const result = await response.json();
+        
+        console.log(`📥 Réponse ${action}:`, {
+          status: response.status,
+          ok: response.ok,
+          result
+        });
+        
+        if (!response.ok) {
+          throw new Error(result.message || 'Erreur serveur');
+        }
+        
+        return result;
+      } catch (error) {
+        console.error('❌ Erreur Edge Function:', error);
+        throw error;
+      }
+    }
+    
+    // CHARGER SESSION
+    function loadSession() {
+      const sessionStr = localStorage.getItem('session');
+      
+      if (!sessionStr) {
+        console.error('❌ Aucune session dans localStorage');
+        window.location.href = 'con.html';
+        return null;
+      }
+      
+      try {
+        const session = JSON.parse(sessionStr);
+        
+        console.log('📦 Session chargée:', {
+          user_id: session.user?.id,
+          email: session.user?.email,
+          has_access_token: !!session.access_token,
+          token_preview: session.access_token ? session.access_token.substring(0, 20) + '...' : 'AUCUN'
+        });
+        
+        // Vérifier que la session a tous les champs nécessaires
+        if (!session.user || !session.user.id || !session.access_token) {
+          console.error('❌ Session invalide ou incomplète:', session);
+          localStorage.removeItem('session');
+          window.location.href = 'con.html';
+          return null;
+        }
+        
+        currentSession = session;
+        return session;
+        
+      } catch (error) {
+        console.error('❌ Erreur parsing session:', error);
+        localStorage.removeItem('session');
+        window.location.href = 'con.html';
+        return null;
+      }
+    }
+    
+    // CHARGER PROFIL UTILISATEUR
+    async function loadUserProfile() {
+      try {
+        const session = loadSession();
+        if (!session || !session.user) return;
+        
+        // ✅ Charger l'utilisateur DIRECTEMENT depuis la table users via l'Edge Function
+        // L'Edge Function utilise le token pour trouver l'auth_uid puis récupère depuis users
+        const walletData = await callEdgeFunction('load_wallet');
+        
+        if (!walletData.success) {
+          showMessage('Erreur de chargement du wallet', 'error');
+          // Ne pas bloquer, continuer quand même
+        }
+        
+        // ✅ On a maintenant besoin des infos utilisateur
+        // On va créer une action pour récupérer le profil complet
+        try {
+          // Créer currentUser basique depuis la session en attendant
+          currentUser = {
+            id: session.user.id,
+            email: session.user.email,
+            username: 'Chargement...',
+            prenom: session.user.user_metadata?.prenom || 'Utilisateur',
+            nom: session.user.user_metadata?.nom || ''
+          };
+          
+          const prenom = currentUser.prenom;
+          const nom = currentUser.nom;
+          const displayName = nom ? 
+            `${prenom.charAt(0).toUpperCase() + prenom.slice(1)} ${nom.charAt(0).toUpperCase() + nom.slice(1)}` :
+            prenom.charAt(0).toUpperCase() + prenom.slice(1);
+          
+          document.getElementById('userName').textContent = displayName;
+          
+        } catch (error) {
+          console.error('Erreur création currentUser:', error);
+        }
+        
+        // Afficher le wallet si chargé
+        if (walletData && walletData.wallet) {
+          document.getElementById('walletBalance').textContent = `${walletData.wallet.balance} €`;
+        }
+        
+        // Charger les posts
+        await loadPosts();
+        
+      } catch (error) {
+        console.error('Erreur chargement profil:', error);
+        showMessage('Erreur de chargement du profil', 'error');
+      }
+    }
+    
+    // CHARGER WALLET
+    async function loadWallet() {
+      try {
+        const walletData = await callEdgeFunction('load_wallet');
+        
+        if (walletData.success && walletData.wallet) {
+          document.getElementById('walletBalance').textContent = `${walletData.wallet.balance} €`;
+        }
+      } catch (error) {
+        console.error('Erreur wallet:', error);
+      }
+    }
+    
+    // CHARGER TOUS LES POSTS
+    async function loadPosts() {
+      try {
+        const postsData = await callEdgeFunction('load_posts', {
+          limit: 20,
+          offset: 0
+        });
+        
+        if (postsData.success && postsData.posts) {
+          allPosts = postsData.posts;
+          displayPosts(postsData.posts);
+        }
+      } catch (error) {
+        console.error('Erreur posts:', error);
+        document.getElementById('postsContainer').innerHTML = '<p style="color:white;">Aucune actualité pour le moment</p>';
+      }
+    }
+    
+    // AFFICHER LES POSTS
+    async function displayPosts(posts) {
+      const container = document.getElementById('postsContainer');
+      
+      if (!posts || posts.length === 0) {
+        container.innerHTML = '<p style="color:white;">Aucune actualité pour le moment</p>';
+        return;
+      }
+      
+      container.innerHTML = posts.map(post => `
+        <div class="post-card" onclick="openCommentsModal('${post.id}')">
+          <div class="post-header">
+            <div class="post-author-avatar">${post.author_avatar ? `<img src="${post.author_avatar}" alt="Avatar">` : '👤'}</div>
+            <div class="post-author-name">${post.author_username || 'Admin'}</div>
+          </div>
+          <div class="post-title">${post.title}</div>
+          <div class="post-content">${post.content}</div>
+          <div class="post-footer">
+            <div>
+              <button class="love-btn" onclick="toggleLove(event, '${post.id}')" id="love-btn-${post.id}">❤️</button>
+              <span class="love-count" id="love-${post.id}">${post.love_count || 0}</span>
+            </div>
+            <div class="comment-count" id="comments-${post.id}">${post.comment_count || 0} commentaires</div>
+          </div>
+        </div>
+      `).join('');
+      
+      // Vérifier les loves pour chaque post
+      for (const post of posts) {
+        await checkUserLove(post.id);
+      }
+    }
+    
+    // VÉRIFIER SI L'UTILISATEUR A AIMÉ
+    async function checkUserLove(postId) {
+      try {
+        const loveData = await callEdgeFunction('check_love', { post_id: postId });
+        
+        if (loveData.success && loveData.loved) {
+          const btn = document.getElementById(`love-btn-${postId}`);
+          if (btn) btn.classList.add('loved');
+        }
+      } catch (error) {
+        console.error('Erreur check love:', error);
+      }
+    }
+    
+    // TOGGLE LOVE
+    async function toggleLove(event, postId) {
+      event.stopPropagation();
+      
+      try {
+        const loveData = await callEdgeFunction('toggle_love', { post_id: postId });
+        
+        if (loveData.success) {
+          const btn = event.target;
+          const countEl = document.getElementById(`love-${postId}`);
+          
+          if (loveData.action === 'added') {
+            btn.classList.add('loved');
+            countEl.textContent = parseInt(countEl.textContent) + 1;
+          } else {
+            btn.classList.remove('loved');
+            countEl.textContent = Math.max(0, parseInt(countEl.textContent) - 1);
+          }
+        }
+        
+      } catch (error) {
+        console.error('Erreur love:', error);
+        showMessage('Erreur lors de la réaction', 'error');
+      }
+    }
+    
+    // OUVRIR MODAL COMMENTAIRES
+    async function openCommentsModal(postId) {
+      currentPostId = postId;
+      document.getElementById('commentsModal').classList.add('show');
+      await loadComments(postId);
+    }
+    
+    // FERMER MODAL
+    function closeCommentsModal() {
+      document.getElementById('commentsModal').classList.remove('show');
+      currentPostId = null;
+      document.getElementById('commentInput').value = '';
+    }
+    
+    // CHARGER COMMENTAIRES
+    async function loadComments(postId) {
+      try {
+        const commentsData = await callEdgeFunction('load_comments', { post_id: postId });
+        
+        const container = document.getElementById('commentsContainer');
+        
+        if (!commentsData.success || !commentsData.comments || commentsData.comments.length === 0) {
+          container.innerHTML = '<p style="color:white;text-align:center;">Aucun commentaire</p>';
+          return;
+        }
+        
+        container.innerHTML = commentsData.comments.map(comment => {
+          const username = comment.users?.username || 'Utilisateur';
+          const avatar = comment.users?.avatar_url;
+          
+          let repliesHtml = '';
+          if (comment.replies && comment.replies.length > 0) {
+            repliesHtml = `<div class="replies">` + comment.replies.map(reply => {
+              const replyUsername = reply.users?.username || 'Utilisateur';
+              return `
+                <div class="reply">
+                  <div class="comment-author">${replyUsername}</div>
+                  <div class="comment-text">${reply.content}</div>
+                </div>
+              `;
+            }).join('') + `</div>`;
+          }
+          
+          return `
+            <div class="comment">
+              <div class="comment-author">${username}</div>
+              <div class="comment-text">${comment.content}</div>
+              <button class="comment-reply-btn" onclick="replyToComment('${comment.id}')">Répondre</button>
+              ${repliesHtml}
+            </div>
+          `;
+        }).join('');
+        
+      } catch (error) {
+        console.error('Erreur commentaires:', error);
+        document.getElementById('commentsContainer').innerHTML = '<p style="color:white;text-align:center;">Erreur de chargement</p>';
+      }
+    }
+    
+    // ENVOYER COMMENTAIRE
+    async function submitComment() {
+      const input = document.getElementById('commentInput');
+      const content = input.value.trim();
+      
+      if (!content) {
+        showMessage('Veuillez écrire un commentaire', 'error');
+        return;
+      }
+      
+      try {
+        const commentData = await callEdgeFunction('add_comment', {
+          post_id: currentPostId,
+          content
+        });
+        
+        if (commentData.success) {
+          input.value = '';
+          await loadComments(currentPostId);
+          
+          // Mettre à jour le compteur
+          const countEl = document.getElementById(`comments-${currentPostId}`);
+          if (countEl) {
+            const currentCount = parseInt(countEl.textContent);
+            countEl.textContent = `${currentCount + 1} commentaires`;
+          }
+          
+          showMessage('Commentaire ajouté !', 'success');
+        }
+        
+      } catch (error) {
+        console.error('Erreur commentaire:', error);
+        showMessage('Erreur lors de l\'ajout du commentaire', 'error');
+      }
+    }
+    
+    // RÉPONDRE À UN COMMENTAIRE
+    async function replyToComment(commentId) {
+      const content = prompt('Votre réponse :');
+      
+      if (!content || !content.trim()) {
+        return;
+      }
+      
+      try {
+        const replyData = await callEdgeFunction('add_reply', {
+          comment_id: commentId,
+          content: content.trim()
+        });
+        
+        if (replyData.success) {
+          await loadComments(currentPostId);
+          showMessage('Réponse ajoutée !', 'success');
+        }
+        
+      } catch (error) {
+        console.error('Erreur réponse:', error);
+        showMessage('Erreur lors de l\'ajout de la réponse', 'error');
+      }
+    }
+    
+    // UPLOAD AVATAR
+    document.getElementById('addAvatarBtn').addEventListener('click', () => {
+      document.getElementById('avatarFileInput').click();
+    });
+    
+    document.getElementById('avatarFileInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      
+      if (!file) return;
+      
+      // Vérifier la taille (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        showMessage('Le fichier est trop volumineux (max 2 MB)', 'error');
+        return;
+      }
+      
+      // Vérifier le type
+      if (!file.type.startsWith('image/')) {
+        showMessage('Veuillez sélectionner une image', 'error');
+        return;
+      }
+      
+      try {
+        // Convertir en base64
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          const base64 = event.target.result;
+          
+          showMessage('Upload en cours...', 'success');
+          
+          try {
+            const uploadData = await callEdgeFunction('upload_avatar', {
+              avatar_base64: base64,
+              filename: file.name
+            });
+            
+            if (uploadData.success && uploadData.avatar_url) {
+              // Mettre à jour l'affichage
+              document.getElementById('userAvatar').innerHTML = `<img src="${uploadData.avatar_url}" alt="Avatar">`;
+              currentUser.avatar_url = uploadData.avatar_url;
+              
+              showMessage('Photo de profil mise à jour avec succès !', 'success');
+            }
+            
+          } catch (error) {
+            console.error('Erreur upload:', error);
+            showMessage(error.message || 'Erreur lors de l\'upload', 'error');
+          }
+        };
+        
+        reader.onerror = () => {
+          showMessage('Erreur lors de la lecture du fichier', 'error');
+        };
+        
+        reader.readAsDataURL(file);
+        
+      } catch (error) {
+        console.error('Erreur traitement fichier:', error);
+        showMessage('Erreur lors du traitement du fichier', 'error');
+      }
+      
+      // Réinitialiser l'input
+      e.target.value = '';
+    });
+    
+    // SUPPRIMER AVATAR
+    document.getElementById('deleteAvatarBtn').addEventListener('click', async () => {
+      if (!currentUser || !currentUser.avatar_url) {
+        showMessage('Aucun avatar à supprimer', 'error');
+        return;
+      }
+      
+      if (!confirm('Êtes-vous sûr de vouloir supprimer votre photo de profil ?')) {
+        return;
+      }
+      
+      try {
+        // Pour la suppression, on va utiliser un update avec avatar_url = null
+        // via l'Edge Function (vous devrez ajouter cette action si nécessaire)
+        // Pour l'instant, on simule la suppression côté client
+        
+        showMessage('Fonctionnalité de suppression en cours de développement', 'error');
+        
+        // Code à décommenter quand l'action delete_avatar sera disponible :
+        /*
+        const deleteData = await callEdgeFunction('delete_avatar');
+        
+        if (deleteData.success) {
+          document.getElementById('userAvatar').innerHTML = '👤';
+          currentUser.avatar_url = null;
+          showMessage('Photo de profil supprimée avec succès', 'success');
+        }
+        */
+        
+      } catch (error) {
+        console.error('Erreur suppression avatar:', error);
+        showMessage(error.message || 'Erreur lors de la suppression', 'error');
+      }
+    });
+    
+    // INITIALISATION
+    window.addEventListener('DOMContentLoaded', () => {
+      loadUserProfile();
+    });
+    
+    // FERMER MODAL AU CLIC EXTÉRIEUR
+    document.getElementById('commentsModal').addEventListener('click', (e) => {
+      if (e.target.id === 'commentsModal') {
+        closeCommentsModal();
+      }
+    });
+  </script>
 </body>
-                                                                                           </html>
+    </html>
