@@ -1835,7 +1835,7 @@
       if (!confirm('⚠️ ATTENTION : Supprimer cet utilisateur ? Toutes ses données seront perdues.')) return;
       
       try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
           .from('users')
           .delete()
           .eq('id', id);
@@ -1866,9 +1866,9 @@
 
     // Check if already logged in
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       if (session) {
-        const { data: userData } = await supabase
+        const { data: userData } = await supabaseClient
           .from('users')
           .select('role, email, username')
           .eq('auth_uid', session.user.id)
@@ -1885,4 +1885,4 @@
     })();
   </script>
 </body>
-  </html>
+</html> 
