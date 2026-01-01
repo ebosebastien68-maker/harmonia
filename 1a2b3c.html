@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HARMONIA - Admin Panel</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * {
       margin: 0;
@@ -72,16 +73,22 @@
       color: #333;
     }
 
-    .form-group input {
+    .form-group input, .form-group textarea, .form-group select {
       width: 100%;
       padding: 12px 15px;
       border: 2px solid #e0e0e0;
       border-radius: 10px;
       font-size: 14px;
       transition: all 0.3s;
+      font-family: inherit;
     }
 
-    .form-group input:focus {
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
       outline: none;
       border-color: #667eea;
       box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -118,6 +125,15 @@
       border-radius: 8px;
       margin-bottom: 20px;
       font-size: 14px;
+      text-align: center;
+    }
+
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
       text-align: center;
     }
 
@@ -351,27 +367,6 @@
       margin-bottom: 20px;
     }
 
-    .form-group textarea {
-      width: 100%;
-      padding: 12px 15px;
-      border: 2px solid #e0e0e0;
-      border-radius: 10px;
-      font-size: 14px;
-      font-family: inherit;
-      resize: vertical;
-      min-height: 100px;
-    }
-
-    .form-group select {
-      width: 100%;
-      padding: 12px 15px;
-      border: 2px solid #e0e0e0;
-      border-radius: 10px;
-      font-size: 14px;
-      background: white;
-      cursor: pointer;
-    }
-
     .table-container {
       overflow-x: auto;
     }
@@ -513,15 +508,6 @@
 
     .btn-close:hover {
       color: #333;
-    }
-
-    .success-message {
-      background: #d4edda;
-      color: #155724;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      text-align: center;
     }
 
     .loading {
@@ -954,16 +940,15 @@
         </div>
         <div class="form-group">
           <label>Coût de participation</label>
-          <input type="number" name="participation_cost" value="0" min="0">
+          <input type="number" name="participation_cost" value="0" min="0" step="0.01">
         </div>
         <div class="checkbox-group">
           <input type="checkbox" name="is_public" id="is_public" checked>
           <label for="is_public">Section publique</label>
         </div>
         <div class="checkbox-group">
-          <label>
-            <input type="checkbox" name="allow_join" checked> Autoriser les inscriptions
-          </label>
+          <input type="checkbox" name="allow_join" id="allow_join" checked>
+          <label for="allow_join">Autoriser les inscriptions</label>
         </div>
         <button type="submit" class="btn-primary">Créer la section</button>
       </form>
@@ -1120,11 +1105,13 @@
   </div>
 
   <script>
-    const API_URL = 'https://dfccebkmiebkqfwdudjg.supabase.co/functions/v1/admin';
-    let adminCredentials = {
-      email: '',
-      password: ''
-    };
+    // Configuration Supabase
+    const SUPABASE_URL = 'https://dfccebkmiebkqfwdudjg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmY2NlYmttaWVia3Fmd2R1ZGpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NzU4MzcsImV4cCI6MjA4MjM1MTgzN30.4M3L0X-Ej2PfzagRnPd9q6QyyvG1MkmCeucRf-_Mxzc';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    let currentUser = null;
     let allSections = [];
     let allParts = [];
 
@@ -1141,31 +1128,32 @@
       errorDiv.style.display = 'none';
 
       try {
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'get_all_wallets',
-            email,
-            password,
-            data: {}
-          })
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
         });
 
-        const result = await response.json();
+        if (error) throw error;
 
-        if (result.success) {
-          adminCredentials = { email, password };
-          document.getElementById('adminEmail').textContent = email;
-          document.getElementById('loginScreen').style.display = 'none';
-          document.getElementById('dashboard').classList.add('active');
-          loadDashboardData();
-        } else {
-          errorDiv.textContent = result.error || 'Erreur de connexion';
-          errorDiv.style.display = 'block';
+        // Vérifier si l'utilisateur est admin
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('role, email, username')
+          .eq('auth_uid', data.user.id)
+          .single();
+
+        if (userError || userData.role !== 'admin') {
+          await supabase.auth.signOut();
+          throw new Error('Accès refusé - Vous devez être administrateur');
         }
+
+        currentUser = userData;
+        document.getElementById('adminEmail').textContent = userData.email;
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboard').classList.add('active');
+        loadDashboardData();
       } catch (error) {
-        errorDiv.textContent = 'Erreur de connexion au serveur';
+        errorDiv.textContent = error.message;
         errorDiv.style.display = 'block';
       } finally {
         btn.disabled = false;
@@ -1174,26 +1162,12 @@
     });
 
     // Logout
-    function logout() {
-      adminCredentials = { email: '', password: '' };
+    async function logout() {
+      await supabase.auth.signOut();
+      currentUser = null;
       document.getElementById('loginScreen').style.display = 'flex';
       document.getElementById('dashboard').classList.remove('active');
       document.getElementById('loginForm').reset();
-    }
-
-    // API Call
-    async function apiCall(action, data = {}) {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action,
-          email: adminCredentials.email,
-          password: adminCredentials.password,
-          data
-        })
-      });
-      return await response.json();
     }
 
     // Show Page
@@ -1227,22 +1201,23 @@
     // Load Dashboard
     async function loadDashboardData() {
       try {
-        const [wallets, sections, runs, payments] = await Promise.all([
-          apiCall('get_all_wallets'),
-          fetch('https://dfccebkmiebkqfwdudjg.supabase.co/rest/v1/sections?select=*', {
-            headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmY2NlYmttaWVia3Fmd2R1ZGpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUzMTU4MTIsImV4cCI6MjA1MDg5MTgxMn0.rKK2N_JR-6lFfDL3vEWGqECh7rq7-gRLFGHOJWvMH3M' }
-          }).then(r => r.json()),
-          fetch('https://dfccebkmiebkqfwdudjg.supabase.co/rest/v1/runs?select=*&is_closed=eq.false', {
-            headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmY2NlYmttaWVia3Fmd2R1ZGpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUzMTU4MTIsImV4cCI6MjA1MDg5MTgxMn0.rKK2N_JR-6lFfDL3vEWGqECh7rq7-gRLFGHOJWvMH3M' }
-          }).then(r => r.json()),
-          apiCall('get_all_payments')
+        const [
+          { count: usersCount },
+          { count: sectionsCount },
+          { count: runsCount },
+          { data: payments }
+        ] = await Promise.all([
+          supabase.from('users').select('*', { count: 'exact', head: true }),
+          supabase.from('sections').select('*', { count: 'exact', head: true }),
+          supabase.from('runs').select('*', { count: 'exact', head: true }).eq('is_closed', false),
+          supabase.from('payments').select('amount, status').eq('status', 'completed')
         ]);
 
-        document.getElementById('stat-users').textContent = wallets.data?.length || 0;
-        document.getElementById('stat-sections').textContent = sections.length || 0;
-        document.getElementById('stat-runs').textContent = runs.length || 0;
+        document.getElementById('stat-users').textContent = usersCount || 0;
+        document.getElementById('stat-sections').textContent = sectionsCount || 0;
+        document.getElementById('stat-runs').textContent = runsCount || 0;
         
-        const totalRevenue = payments.data?.reduce((sum, p) => sum + (p.status === 'completed' ? parseFloat(p.amount) : 0), 0) || 0;
+        const totalRevenue = payments?.reduce((sum, p) => sum + parseFloat(p.amount), 0) || 0;
         document.getElementById('stat-revenue').textContent = totalRevenue.toFixed(2) + '€';
       } catch (error) {
         console.error('Erreur dashboard:', error);
@@ -1255,11 +1230,18 @@
       tbody.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div>Chargement...</td></tr>';
 
       try {
-        const response = await fetch('https://dfccebkmiebkqfwdudjg.supabase.co/rest/v1/sections?select=*,users(username)', {
-          headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmY2NlYmttaWVia3Fmd2R1ZGpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUzMTU4MTIsImV4cCI6MjA1MDg5MTgxMn0.rKK2N_JR-6lFfDL3vEWGqECh7rq7-gRLFGHOJWvMH3M' }
-        });
-        const sections = await response.json();
+        const { data: sections, error } = await supabase
+          .from('sections')
+          .select('*, users(username)')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
         allSections = sections;
+
+        if (sections.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#666;">Aucune section</td></tr>';
+          return;
+        }
 
         tbody.innerHTML = sections.map(s => `
           <tr>
@@ -1274,7 +1256,7 @@
           </tr>
         `).join('');
       } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#f44336;">Erreur de chargement</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#f44336;">Erreur: ' + error.message + '</td></tr>';
       }
     }
 
@@ -1284,11 +1266,19 @@
       tbody.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div>Chargement...</td></tr>';
 
       try {
-        const response = await fetch('https://dfccebkmiebkqfwdudjg.supabase.co/rest/v1/parts?select=*,sections(title)', {
-          headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmY2NlYmttaWVia3Fmd2R1ZGpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUzMTU4MTIsImV4cCI6MjA1MDg5MTgxMn0.rKK2N_JR-6lFfDL3vEWGqECh7rq7-gRLFGHOJWvMH3M' }
-        });
-        const parts = await response.json();
+        const { data: parts, error } = await supabase
+          .from('parts')
+          .select('*, sections(title)')
+          .order('section_id', { ascending: true })
+          .order('order_number', { ascending: true });
+
+        if (error) throw error;
         allParts = parts;
+
+        if (parts.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#666;">Aucune part</td></tr>';
+          return;
+        }
 
         tbody.innerHTML = parts.map(p => `
           <tr>
@@ -1303,7 +1293,7 @@
           </tr>
         `).join('');
       } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#f44336;">Erreur de chargement</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#f44336;">Erreur: ' + error.message + '</td></tr>';
       }
     }
 
@@ -1313,10 +1303,17 @@
       tbody.innerHTML = '<tr><td colspan="7" class="loading"><div class="spinner"></div>Chargement...</td></tr>';
 
       try {
-        const response = await fetch('https://dfccebkmiebkqfwdudjg.supabase.co/rest/v1/runs?select=*,parts(title,sections(title))', {
-          headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmY2NlYmttaWVia3Fmd2R1ZGpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUzMTU4MTIsImV4cCI6MjA1MDg5MTgxMn0.rKK2N_JR-6lFfDL3vEWGqECh7rq7-gRLFGHOJWvMH3M' }
-        });
-        const runs = await response.json();
+        const { data: runs, error } = await supabase
+          .from('runs')
+          .select('*, parts(title, sections(title))')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (runs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#666;">Aucun run</td></tr>';
+          return;
+        }
 
         tbody.innerHTML = runs.map(r => `
           <tr>
@@ -1331,12 +1328,12 @@
             </td>
             <td>
               ${!r.is_closed ? `<button class="btn-icon edit" onclick="closeRun('${r.id}')">🔒 Fermer</button>` : ''}
-              ${r.is_closed && !r.points_distributed ? `<button class="btn-icon view" onclick="openDistributePoints('${r.id}')">💰 Points</button>` : ''}
+              ${r.is_closed && !r.points_distributed ? `<button class="btn-icon view" onclick="openDistributePoints('${r.id}', '${r.part_id}', ${r.admin_answer})">💰 Points</button>` : ''}
             </td>
           </tr>
         `).join('');
       } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#f44336;">Erreur de chargement</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#f44336;">Erreur: ' + error.message + '</td></tr>';
       }
     }
 
@@ -1346,10 +1343,17 @@
       tbody.innerHTML = '<tr><td colspan="5" class="loading"><div class="spinner"></div>Chargement...</td></tr>';
 
       try {
-        const response = await fetch('https://dfccebkmiebkqfwdudjg.supabase.co/rest/v1/posts_actualite?select=*&order=created_at.desc', {
-          headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmY2NlYmttaWVia3Fmd2R1ZGpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUzMTU4MTIsImV4cCI6MjA1MDg5MTgxMn0.rKK2N_JR-6lFfDL3vEWGqECh7rq7-gRLFGHOJWvMH3M' }
-        });
-        const posts = await response.json();
+        const { data: posts, error } = await supabase
+          .from('posts_actualite')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (posts.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;">Aucune actualité</td></tr>';
+          return;
+        }
 
         tbody.innerHTML = posts.map(p => `
           <tr>
@@ -1363,7 +1367,7 @@
           </tr>
         `).join('');
       } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#f44336;">Erreur de chargement</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#f44336;">Erreur: ' + error.message + '</td></tr>';
       }
     }
 
@@ -1373,10 +1377,17 @@
       tbody.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div>Chargement...</td></tr>';
 
       try {
-        const response = await fetch('https://dfccebkmiebkqfwdudjg.supabase.co/rest/v1/users?select=*&order=created_at.desc', {
-          headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmY2NlYmttaWVia3Fmd2R1ZGpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUzMTU4MTIsImV4cCI6MjA1MDg5MTgxMn0.rKK2N_JR-6lFfDL3vEWGqECh7rq7-gRLFGHOJWvMH3M' }
-        });
-        const users = await response.json();
+        const { data: users, error } = await supabase
+          .from('users')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (users.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#666;">Aucun utilisateur</td></tr>';
+          return;
+        }
 
         tbody.innerHTML = users.map(u => `
           <tr>
@@ -1392,22 +1403,22 @@
           </tr>
         `).join('');
       } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#f44336;">Erreur de chargement</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#f44336;">Erreur: ' + error.message + '</td></tr>';
       }
     }
 
     // Load Analytics
     async function loadAnalytics() {
       try {
-        const [answers, scores, payments] = await Promise.all([
-          apiCall('get_all_answers', { limit: 100 }),
-          apiCall('get_all_scores'),
-          apiCall('get_all_payments')
-        ]);
-
         // Answers
+        const { data: answers, error: answersError } = await supabase
+          .from('answers')
+          .select('*, users(username, email), runs(question)')
+          .order('answered_at', { ascending: false })
+          .limit(50);
+
         const answersDiv = document.getElementById('analyticsAnswers');
-        if (answers.success && answers.data.length > 0) {
+        if (answers && answers.length > 0) {
           answersDiv.innerHTML = `
             <table>
               <thead>
@@ -1419,7 +1430,7 @@
                 </tr>
               </thead>
               <tbody>
-                ${answers.data.slice(0, 50).map(a => `
+                ${answers.map(a => `
                   <tr>
                     <td>${a.users?.username || 'N/A'}</td>
                     <td>${a.runs?.question?.substring(0, 50) || 'N/A'}...</td>
@@ -1435,8 +1446,14 @@
         }
 
         // Scores
+        const { data: scores, error: scoresError } = await supabase
+          .from('scores')
+          .select('*, users(username), parts(title)')
+          .order('score', { ascending: false })
+          .limit(50);
+
         const scoresDiv = document.getElementById('analyticsScores');
-        if (scores.success && scores.data.length > 0) {
+        if (scores && scores.length > 0) {
           scoresDiv.innerHTML = `
             <table>
               <thead>
@@ -1448,7 +1465,7 @@
                 </tr>
               </thead>
               <tbody>
-                ${scores.data.slice(0, 50).map(s => `
+                ${scores.map(s => `
                   <tr>
                     <td>${s.users?.username || 'N/A'}</td>
                     <td>${s.parts?.title || 'N/A'}</td>
@@ -1464,8 +1481,14 @@
         }
 
         // Payments
+        const { data: payments, error: paymentsError } = await supabase
+          .from('payments')
+          .select('*, users(username)')
+          .order('created_at', { ascending: false })
+          .limit(50);
+
         const paymentsDiv = document.getElementById('analyticsPayments');
-        if (payments.success && payments.data.length > 0) {
+        if (payments && payments.length > 0) {
           paymentsDiv.innerHTML = `
             <table>
               <thead>
@@ -1477,7 +1500,7 @@
                 </tr>
               </thead>
               <tbody>
-                ${payments.data.slice(0, 50).map(p => `
+                ${payments.map(p => `
                   <tr>
                     <td>${p.users?.username || 'N/A'}</td>
                     <td><strong>${parseFloat(p.amount).toFixed(2)}€</strong></td>
@@ -1500,14 +1523,8 @@
     async function loadSectionsSelect() {
       const select = document.getElementById('selectSection');
       if (allSections.length === 0) {
-        try {
-          const response = await fetch('https://dfccebkmiebkqfwdudjg.supabase.co/rest/v1/sections?select=*', {
-            headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmY2NlYmttaWVia3Fmd2R1ZGpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUzMTU4MTIsImV4cCI6MjA1MDg5MTgxMn0.rKK2N_JR-6lFfDL3vEWGqECh7rq7-gRLFGHOJWvMH3M' }
-          });
-          allSections = await response.json();
-        } catch (error) {
-          console.error('Erreur:', error);
-        }
+        const { data: sections } = await supabase.from('sections').select('*');
+        allSections = sections || [];
       }
       select.innerHTML = '<option value="">Sélectionner une section</option>' + 
         allSections.map(s => `<option value="${s.id}">${s.title}</option>`).join('');
@@ -1517,179 +1534,226 @@
     async function loadPartsSelect() {
       const select = document.getElementById('selectPart');
       if (allParts.length === 0) {
-        try {
-          const response = await fetch('https://dfccebkmiebkqfwdudjg.supabase.co/rest/v1/parts?select=*,sections(title)', {
-            headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmY2NlYmttaWVia3Fmd2R1ZGpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUzMTU4MTIsImV4cCI6MjA1MDg5MTgxMn0.rKK2N_JR-6lFfDL3vEWGqECh7rq7-gRLFGHOJWvMH3M' }
-          });
-          allParts = await response.json();
-        } catch (error) {
-          console.error('Erreur:', error);
-        }
+        const { data: parts } = await supabase.from('parts').select('*, sections(title)');
+        allParts = parts || [];
       }
       select.innerHTML = '<option value="">Sélectionner une part</option>' + 
         allParts.map(p => `<option value="${p.id}">${p.sections?.title || 'N/A'} - Part #${p.order_number} ${p.title ? '(' + p.title + ')' : ''}</option>`).join('');
     }
 
-    // Form Submissions
+    // Form: Create Section
     document.getElementById('formCreateSection').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
-      const data = {
-        title: formData.get('title'),
-        description: formData.get('description'),
-        participation_cost: parseFloat(formData.get('participation_cost')),
-        is_public: formData.get('is_public') === 'on',
-        allow_join: formData.get('allow_join') === 'on'
-      };
-
+      
       try {
-        const result = await apiCall('create_section', data);
-        if (result.success) {
-          alert('✅ Section créée avec succès !');
-          closeModal('createSection');
-          e.target.reset();
-          loadSections();
-        } else {
-          alert('❌ Erreur: ' + result.error);
-        }
+        const { data, error } = await supabase
+          .from('sections')
+          .insert({
+            title: formData.get('title'),
+            description: formData.get('description') || null,
+            participation_cost: parseFloat(formData.get('participation_cost')),
+            is_public: formData.get('is_public') === 'on',
+            allow_join: formData.get('allow_join') === 'on',
+            created_by: (await supabase.from('users').select('id').eq('email', currentUser.email).single()).data.id
+          })
+          .select();
+
+        if (error) throw error;
+        
+        alert('✅ Section créée avec succès !');
+        closeModal('createSection');
+        e.target.reset();
+        loadSections();
       } catch (error) {
-        alert('❌ Erreur réseau');
+        alert('❌ Erreur: ' + error.message);
       }
     });
 
+    // Form: Create Part
     document.getElementById('formCreatePart').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
-      const data = {
-        section_id: formData.get('section_id'),
-        order_number: parseInt(formData.get('order_number')),
-        title: formData.get('title') || null,
-        access_score_min: formData.get('access_score_min') ? parseInt(formData.get('access_score_min')) : null,
-        access_rank_top: formData.get('access_rank_top') ? parseInt(formData.get('access_rank_top')) : null,
-        is_active: formData.get('is_active') === 'on'
-      };
-
+      
       try {
-        const result = await apiCall('create_part', data);
-        if (result.success) {
-          alert('✅ Part créée avec succès !');
-          closeModal('createPart');
-          e.target.reset();
-          loadParts();
-        } else {
-          alert('❌ Erreur: ' + result.error);
-        }
+        const { data, error } = await supabase
+          .from('parts')
+          .insert({
+            section_id: formData.get('section_id'),
+            order_number: parseInt(formData.get('order_number')),
+            title: formData.get('title') || null,
+            access_score_min: formData.get('access_score_min') ? parseInt(formData.get('access_score_min')) : null,
+            access_rank_top: formData.get('access_rank_top') ? parseInt(formData.get('access_rank_top')) : null,
+            is_active: formData.get('is_active') === 'on'
+          })
+          .select();
+
+        if (error) throw error;
+        
+        alert('✅ Part créée avec succès !');
+        closeModal('createPart');
+        e.target.reset();
+        loadParts();
       } catch (error) {
-        alert('❌ Erreur réseau');
+        alert('❌ Erreur: ' + error.message);
       }
     });
 
+    // Form: Create Run
     document.getElementById('formCreateRun').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
-      const data = {
-        part_id: formData.get('part_id'),
-        run_number: parseInt(formData.get('run_number')),
-        question: formData.get('question'),
-        time_limit: parseInt(formData.get('time_limit')),
-        admin_answer: formData.get('admin_answer') === 'true',
-        published_at: new Date().toISOString()
-      };
-
+      
       try {
-        const result = await apiCall('create_run', data);
-        if (result.success) {
-          alert('✅ Run créé avec succès !');
-          closeModal('createRun');
-          e.target.reset();
-          loadRuns();
-        } else {
-          alert('❌ Erreur: ' + result.error);
-        }
+        const userId = (await supabase.from('users').select('id').eq('email', currentUser.email).single()).data.id;
+        
+        const { data, error } = await supabase
+          .from('runs')
+          .insert({
+            part_id: formData.get('part_id'),
+            run_number: parseInt(formData.get('run_number')),
+            question: formData.get('question'),
+            time_limit: parseInt(formData.get('time_limit')),
+            admin_answer: formData.get('admin_answer') === 'true',
+            published_at: new Date().toISOString(),
+            created_by: userId
+          })
+          .select();
+
+        if (error) throw error;
+        
+        alert('✅ Run créé avec succès !');
+        closeModal('createRun');
+        e.target.reset();
+        loadRuns();
       } catch (error) {
-        alert('❌ Erreur réseau');
+        alert('❌ Erreur: ' + error.message);
       }
     });
 
+    // Form: Create Actualite
     document.getElementById('formCreateActualite').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
       
-      // Get user ID first
-      const userResponse = await fetch('https://dfccebkmiebkqfwdudjg.supabase.co/rest/v1/users?select=id&email=eq.' + adminCredentials.email, {
-        headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmY2NlYmttaWVia3Fmd2R1ZGpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUzMTU4MTIsImV4cCI6MjA1MDg5MTgxMn0.rKK2N_JR-6lFfDL3vEWGqECh7rq7-gRLFGHOJWvMH3M' }
-      });
-      const users = await userResponse.json();
-      
-      const data = {
-        title: formData.get('title'),
-        content: formData.get('content'),
-        image_url: formData.get('image_url') || null,
-        created_by: users[0]?.id
-      };
-
       try {
-        const result = await apiCall('create_post_actualite', data);
-        if (result.success) {
-          alert('✅ Actualité créée avec succès !');
-          closeModal('createActualite');
-          e.target.reset();
-          loadActualites();
-        } else {
-          alert('❌ Erreur: ' + result.error);
-        }
+        const userId = (await supabase.from('users').select('id').eq('email', currentUser.email).single()).data.id;
+        
+        const { data, error } = await supabase
+          .from('posts_actualite')
+          .insert({
+            title: formData.get('title'),
+            content: formData.get('content'),
+            image_url: formData.get('image_url') || null,
+            created_by: userId
+          })
+          .select();
+
+        if (error) throw error;
+        
+        alert('✅ Actualité créée avec succès !');
+        closeModal('createActualite');
+        e.target.reset();
+        loadActualites();
       } catch (error) {
-        alert('❌ Erreur réseau');
+        alert('❌ Erreur: ' + error.message);
       }
     });
 
+    // Form: Distribute Points
     document.getElementById('formDistributePoints').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
-      const data = {
-        id: formData.get('run_id'),
-        points: parseInt(formData.get('points'))
-      };
+      const runId = formData.get('run_id');
+      const points = parseInt(formData.get('points'));
 
-      if (!confirm('⚠️ Confirmer la distribution de ' + data.points + ' points par bonne réponse ?')) return;
+      if (!confirm('⚠️ Confirmer la distribution de ' + points + ' points par bonne réponse ?')) return;
 
       try {
-        const result = await apiCall('distribute_points', data);
-        if (result.success) {
-          alert(`✅ Points distribués !\n\n📊 Statistiques:\n- Réponses totales: ${result.data.total_answers}\n- Bonnes réponses: ${result.data.correct_answers}\n- Points par joueur: ${result.data.points_per_player}\n- Total distribué: ${result.data.total_points_distributed} points`);
-          closeModal('distributePoints');
-          loadRuns();
-        } else {
-          alert('❌ Erreur: ' + result.error);
+        // Récupérer le run
+        const { data: run, error: runError } = await supabase
+          .from('runs')
+          .select('*, parts(id)')
+          .eq('id', runId)
+          .single();
+
+        if (runError) throw runError;
+
+        // Récupérer toutes les réponses
+        const { data: answers, error: answersError } = await supabase
+          .from('answers')
+          .select('*')
+          .eq('run_id', runId);
+
+        if (answersError) throw answersError;
+
+        // Filtrer les bonnes réponses
+        const correctAnswers = answers.filter(a => a.user_answer === run.admin_answer);
+
+        // Distribuer les points
+        for (const answer of correctAnswers) {
+          // Récupérer le score actuel
+          const { data: currentScore } = await supabase
+            .from('scores')
+            .select('score')
+            .eq('user_id', answer.user_id)
+            .eq('part_id', run.parts.id)
+            .single();
+
+          if (currentScore) {
+            // Mettre à jour le score
+            await supabase
+              .from('scores')
+              .update({ score: currentScore.score + points })
+              .eq('user_id', answer.user_id)
+              .eq('part_id', run.parts.id);
+          } else {
+            // Créer le score
+            await supabase
+              .from('scores')
+              .insert({
+                user_id: answer.user_id,
+                part_id: run.parts.id,
+                score: points
+              });
+          }
         }
+
+        // Marquer le run comme distribué
+        await supabase
+          .from('runs')
+          .update({ points_distributed: true })
+          .eq('id', runId);
+
+        alert(`✅ Points distribués !\n\n📊 Statistiques:\n- Réponses totales: ${answers.length}\n- Bonnes réponses: ${correctAnswers.length}\n- Points par joueur: ${points}\n- Total distribué: ${correctAnswers.length * points} points`);
+        closeModal('distributePoints');
+        loadRuns();
       } catch (error) {
-        alert('❌ Erreur réseau');
+        alert('❌ Erreur: ' + error.message);
       }
     });
 
+    // Form: Update User
     document.getElementById('formUpdateUser').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
-      
       const userId = formData.get('user_id');
       const role = formData.get('role');
       const status = formData.get('status');
 
       try {
-        const [roleResult, statusResult] = await Promise.all([
-          apiCall('update_user_role', { id: userId, role }),
-          apiCall('update_user_status', { id: userId, status })
-        ]);
+        const { error } = await supabase
+          .from('users')
+          .update({ role, status })
+          .eq('id', userId);
 
-        if (roleResult.success && statusResult.success) {
-          alert('✅ Utilisateur mis à jour avec succès !');
-          closeModal('updateUser');
-          loadUsers();
-        } else {
-          alert('❌ Erreur lors de la mise à jour');
-        }
+        if (error) throw error;
+
+        alert('✅ Utilisateur mis à jour avec succès !');
+        closeModal('updateUser');
+        loadUsers();
       } catch (error) {
-        alert('❌ Erreur réseau');
+        alert('❌ Erreur: ' + error.message);
       }
     });
 
@@ -1698,15 +1762,16 @@
       if (!confirm('⚠️ Supprimer cette section ? Cette action est irréversible.')) return;
       
       try {
-        const result = await apiCall('delete_section', { id });
-        if (result.success) {
-          alert('✅ Section supprimée');
-          loadSections();
-        } else {
-          alert('❌ Erreur: ' + result.error);
-        }
+        const { error } = await supabase
+          .from('sections')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+        alert('✅ Section supprimée');
+        loadSections();
       } catch (error) {
-        alert('❌ Erreur réseau');
+        alert('❌ Erreur: ' + error.message);
       }
     }
 
@@ -1714,15 +1779,16 @@
       if (!confirm('⚠️ Supprimer cette part ? Cette action est irréversible.')) return;
       
       try {
-        const result = await apiCall('delete_part', { id });
-        if (result.success) {
-          alert('✅ Part supprimée');
-          loadParts();
-        } else {
-          alert('❌ Erreur: ' + result.error);
-        }
+        const { error } = await supabase
+          .from('parts')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+        alert('✅ Part supprimée');
+        loadParts();
       } catch (error) {
-        alert('❌ Erreur réseau');
+        alert('❌ Erreur: ' + error.message);
       }
     }
 
@@ -1730,19 +1796,20 @@
       if (!confirm('⚠️ Fermer ce run ? Les joueurs ne pourront plus y répondre.')) return;
       
       try {
-        const result = await apiCall('close_run', { id });
-        if (result.success) {
-          alert('✅ Run fermé avec succès');
-          loadRuns();
-        } else {
-          alert('❌ Erreur: ' + result.error);
-        }
+        const { error } = await supabase
+          .from('runs')
+          .update({ is_closed: true })
+          .eq('id', id);
+
+        if (error) throw error;
+        alert('✅ Run fermé avec succès');
+        loadRuns();
       } catch (error) {
-        alert('❌ Erreur réseau');
+        alert('❌ Erreur: ' + error.message);
       }
     }
 
-    function openDistributePoints(runId) {
+    function openDistributePoints(runId, partId, adminAnswer) {
       document.getElementById('distributeRunId').value = runId;
       openModal('distributePoints');
     }
@@ -1751,15 +1818,16 @@
       if (!confirm('⚠️ Supprimer cette actualité ? Cette action est irréversible.')) return;
       
       try {
-        const result = await apiCall('delete_post_actualite', { id });
-        if (result.success) {
-          alert('✅ Actualité supprimée');
-          loadActualites();
-        } else {
-          alert('❌ Erreur: ' + result.error);
-        }
+        const { error } = await supabase
+          .from('posts_actualite')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+        alert('✅ Actualité supprimée');
+        loadActualites();
       } catch (error) {
-        alert('❌ Erreur réseau');
+        alert('❌ Erreur: ' + error.message);
       }
     }
 
@@ -1767,15 +1835,16 @@
       if (!confirm('⚠️ ATTENTION : Supprimer cet utilisateur ? Toutes ses données seront perdues.')) return;
       
       try {
-        const result = await apiCall('delete_user', { id });
-        if (result.success) {
-          alert('✅ Utilisateur supprimé');
-          loadUsers();
-        } else {
-          alert('❌ Erreur: ' + result.error);
-        }
+        const { error } = await supabase
+          .from('users')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+        alert('✅ Utilisateur supprimé');
+        loadUsers();
       } catch (error) {
-        alert('❌ Erreur réseau');
+        alert('❌ Erreur: ' + error.message);
       }
     }
 
@@ -1794,6 +1863,26 @@
         }
       });
     });
+
+    // Check if already logged in
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('role, email, username')
+          .eq('auth_uid', session.user.id)
+          .single();
+
+        if (userData && userData.role === 'admin') {
+          currentUser = userData;
+          document.getElementById('adminEmail').textContent = userData.email;
+          document.getElementById('loginScreen').style.display = 'none';
+          document.getElementById('dashboard').classList.add('active');
+          loadDashboardData();
+        }
+      }
+    })();
   </script>
 </body>
   </html>
