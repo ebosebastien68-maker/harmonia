@@ -137,7 +137,6 @@
       text-align: center;
     }
 
-    /* Dashboard Styles */
     .dashboard {
       display: none;
     }
@@ -544,7 +543,6 @@
       cursor: pointer;
     }
 
-    /* Responsive */
     @media (max-width: 768px) {
       .sidebar {
         width: 100%;
@@ -593,7 +591,6 @@
   </style>
 </head>
 <body>
-  <!-- Login Screen -->
   <div class="login-container" id="loginScreen">
     <div class="login-card">
       <div class="logo">
@@ -617,7 +614,6 @@
     </div>
   </div>
 
-  <!-- Dashboard -->
   <div class="dashboard" id="dashboard">
     <nav class="navbar">
       <div class="navbar-brand">🎮 HARMONIA Admin</div>
@@ -660,7 +656,6 @@
       </aside>
 
       <main class="main-content">
-        <!-- Dashboard Page -->
         <div class="page active" id="page-dashboard">
           <div class="page-header">
             <h2>Tableau de bord</h2>
@@ -691,7 +686,6 @@
           </div>
         </div>
 
-        <!-- Sections Page -->
         <div class="page" id="page-sections">
           <div class="page-header">
             <h2>Gestion des Sections</h2>
@@ -728,7 +722,6 @@
           </div>
         </div>
 
-        <!-- Parts Page -->
         <div class="page" id="page-parts">
           <div class="page-header">
             <h2>Gestion des Parts</h2>
@@ -765,7 +758,6 @@
           </div>
         </div>
 
-        <!-- Runs Page -->
         <div class="page" id="page-runs">
           <div class="page-header">
             <h2>Gestion des Runs</h2>
@@ -803,7 +795,6 @@
           </div>
         </div>
 
-        <!-- Actualités Page -->
         <div class="page" id="page-actualites">
           <div class="page-header">
             <h2>Gestion des Actualités</h2>
@@ -839,7 +830,6 @@
           </div>
         </div>
 
-        <!-- Users Page -->
         <div class="page" id="page-users">
           <div class="page-header">
             <h2>Gestion des Utilisateurs</h2>
@@ -875,7 +865,6 @@
           </div>
         </div>
 
-        <!-- Analytics Page -->
         <div class="page" id="page-analytics">
           <div class="page-header">
             <h2>Analytics & Statistiques</h2>
@@ -922,7 +911,6 @@
     </div>
   </div>
 
-  <!-- Modals -->
   <div class="modal" id="modalCreateSection">
     <div class="modal-content">
       <div class="modal-header">
@@ -1105,17 +1093,15 @@
   </div>
 
   <script>
-    // Configuration Supabase
     const SUPABASE_URL = 'https://dfccebkmiebkqfwdudjg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmY2NlYmttaWVia3Fmd2R1ZGpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NzU4MzcsImV4cCI6MjA4MjM1MTgzN30.4M3L0X-Ej2PfzagRnPd9q6QyyvG1MkmCeucRf-_Mxzc';
     
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
     let currentUser = null;
     let allSections = [];
     let allParts = [];
 
-    // Login
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('loginEmail').value;
@@ -1128,22 +1114,21 @@
       errorDiv.style.display = 'none';
 
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
           email,
           password
         });
 
         if (error) throw error;
 
-        // Vérifier si l'utilisateur est admin
-        const { data: userData, error: userError } = await supabase
+        const { data: userData, error: userError } = await supabaseClient
           .from('users')
           .select('role, email, username')
           .eq('auth_uid', data.user.id)
           .single();
 
         if (userError || userData.role !== 'admin') {
-          await supabase.auth.signOut();
+          await supabaseClient.auth.signOut();
           throw new Error('Accès refusé - Vous devez être administrateur');
         }
 
@@ -1161,16 +1146,14 @@
       }
     });
 
-    // Logout
     async function logout() {
-      await supabase.auth.signOut();
+      await supabaseClient.auth.signOut();
       currentUser = null;
       document.getElementById('loginScreen').style.display = 'flex';
       document.getElementById('dashboard').classList.remove('active');
       document.getElementById('loginForm').reset();
     }
 
-    // Show Page
     function showPage(pageName) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
@@ -1186,7 +1169,6 @@
       if (pageName === 'analytics') loadAnalytics();
     }
 
-    // Modal Functions
     function openModal(modalName) {
       document.getElementById(`modal${modalName.charAt(0).toUpperCase() + modalName.slice(1)}`).classList.add('active');
       
@@ -1198,7 +1180,6 @@
       document.getElementById(`modal${modalName.charAt(0).toUpperCase() + modalName.slice(1)}`).classList.remove('active');
     }
 
-    // Load Dashboard
     async function loadDashboardData() {
       try {
         const [
@@ -1207,10 +1188,10 @@
           { count: runsCount },
           { data: payments }
         ] = await Promise.all([
-          supabase.from('users').select('*', { count: 'exact', head: true }),
-          supabase.from('sections').select('*', { count: 'exact', head: true }),
-          supabase.from('runs').select('*', { count: 'exact', head: true }).eq('is_closed', false),
-          supabase.from('payments').select('amount, status').eq('status', 'completed')
+          supabaseClient.from('users').select('*', { count: 'exact', head: true }),
+          supabaseClient.from('sections').select('*', { count: 'exact', head: true }),
+          supabaseClient.from('runs').select('*', { count: 'exact', head: true }).eq('is_closed', false),
+          supabaseClient.from('payments').select('amount, status').eq('status', 'completed')
         ]);
 
         document.getElementById('stat-users').textContent = usersCount || 0;
@@ -1224,13 +1205,12 @@
       }
     }
 
-    // Load Sections
     async function loadSections() {
       const tbody = document.getElementById('sectionsTableBody');
       tbody.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div>Chargement...</td></tr>';
 
       try {
-        const { data: sections, error } = await supabase
+        const { data: sections, error } = await supabaseClient
           .from('sections')
           .select('*, users(username)')
           .order('created_at', { ascending: false });
@@ -1260,13 +1240,12 @@
       }
     }
 
-    // Load Parts
     async function loadParts() {
       const tbody = document.getElementById('partsTableBody');
       tbody.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div>Chargement...</td></tr>';
 
       try {
-        const { data: parts, error } = await supabase
+        const { data: parts, error } = await supabaseClient
           .from('parts')
           .select('*, sections(title)')
           .order('section_id', { ascending: true })
@@ -1297,13 +1276,12 @@
       }
     }
 
-    // Load Runs
     async function loadRuns() {
       const tbody = document.getElementById('runsTableBody');
       tbody.innerHTML = '<tr><td colspan="7" class="loading"><div class="spinner"></div>Chargement...</td></tr>';
 
       try {
-        const { data: runs, error } = await supabase
+        const { data: runs, error } = await supabaseClient
           .from('runs')
           .select('*, parts(title, sections(title))')
           .order('created_at', { ascending: false });
@@ -1337,13 +1315,12 @@
       }
     }
 
-    // Load Actualites
     async function loadActualites() {
       const tbody = document.getElementById('actualitesTableBody');
       tbody.innerHTML = '<tr><td colspan="5" class="loading"><div class="spinner"></div>Chargement...</td></tr>';
 
       try {
-        const { data: posts, error } = await supabase
+        const { data: posts, error } = await supabaseClient
           .from('posts_actualite')
           .select('*')
           .order('created_at', { ascending: false });
@@ -1371,13 +1348,12 @@
       }
     }
 
-    // Load Users
     async function loadUsers() {
       const tbody = document.getElementById('usersTableBody');
       tbody.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div>Chargement...</td></tr>';
 
       try {
-        const { data: users, error } = await supabase
+        const { data: users, error } = await supabaseClient
           .from('users')
           .select('*')
           .order('created_at', { ascending: false });
@@ -1407,11 +1383,9 @@
       }
     }
 
-    // Load Analytics
     async function loadAnalytics() {
       try {
-        // Answers
-        const { data: answers, error: answersError } = await supabase
+        const { data: answers, error: answersError } = await supabaseClient
           .from('answers')
           .select('*, users(username, email), runs(question)')
           .order('answered_at', { ascending: false })
@@ -1445,8 +1419,7 @@
           answersDiv.innerHTML = '<p style="text-align:center;color:#666;">Aucune réponse</p>';
         }
 
-        // Scores
-        const { data: scores, error: scoresError } = await supabase
+        const { data: scores, error: scoresError } = await supabaseClient
           .from('scores')
           .select('*, users(username), parts(title)')
           .order('score', { ascending: false })
@@ -1480,8 +1453,7 @@
           scoresDiv.innerHTML = '<p style="text-align:center;color:#666;">Aucun score</p>';
         }
 
-        // Payments
-        const { data: payments, error: paymentsError } = await supabase
+        const { data: payments, error: paymentsError } = await supabaseClient
           .from('payments')
           .select('*, users(username)')
           .order('created_at', { ascending: false })
@@ -1519,35 +1491,32 @@
       }
     }
 
-    // Load Sections Select
     async function loadSectionsSelect() {
       const select = document.getElementById('selectSection');
       if (allSections.length === 0) {
-        const { data: sections } = await supabase.from('sections').select('*');
+        const { data: sections } = await supabaseClient.from('sections').select('*');
         allSections = sections || [];
       }
       select.innerHTML = '<option value="">Sélectionner une section</option>' + 
         allSections.map(s => `<option value="${s.id}">${s.title}</option>`).join('');
     }
 
-    // Load Parts Select
     async function loadPartsSelect() {
       const select = document.getElementById('selectPart');
       if (allParts.length === 0) {
-        const { data: parts } = await supabase.from('parts').select('*, sections(title)');
+        const { data: parts } = await supabaseClient.from('parts').select('*, sections(title)');
         allParts = parts || [];
       }
       select.innerHTML = '<option value="">Sélectionner une part</option>' + 
         allParts.map(p => `<option value="${p.id}">${p.sections?.title || 'N/A'} - Part #${p.order_number} ${p.title ? '(' + p.title + ')' : ''}</option>`).join('');
     }
 
-    // Form: Create Section
     document.getElementById('formCreateSection').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
       
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .from('sections')
           .insert({
             title: formData.get('title'),
@@ -1555,7 +1524,7 @@
             participation_cost: parseFloat(formData.get('participation_cost')),
             is_public: formData.get('is_public') === 'on',
             allow_join: formData.get('allow_join') === 'on',
-            created_by: (await supabase.from('users').select('id').eq('email', currentUser.email).single()).data.id
+            created_by: (await supabaseClient.from('users').select('id').eq('email', currentUser.email).single()).data.id
           })
           .select();
 
@@ -1570,13 +1539,12 @@
       }
     });
 
-    // Form: Create Part
     document.getElementById('formCreatePart').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
       
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .from('parts')
           .insert({
             section_id: formData.get('section_id'),
@@ -1599,15 +1567,14 @@
       }
     });
 
-    // Form: Create Run
     document.getElementById('formCreateRun').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
       
       try {
-        const userId = (await supabase.from('users').select('id').eq('email', currentUser.email).single()).data.id;
+        const userId = (await supabaseClient.from('users').select('id').eq('email', currentUser.email).single()).data.id;
         
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .from('runs')
           .insert({
             part_id: formData.get('part_id'),
@@ -1631,15 +1598,14 @@
       }
     });
 
-    // Form: Create Actualite
     document.getElementById('formCreateActualite').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
       
       try {
-        const userId = (await supabase.from('users').select('id').eq('email', currentUser.email).single()).data.id;
+        const userId = (await supabaseClient.from('users').select('id').eq('email', currentUser.email).single()).data.id;
         
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .from('posts_actualite')
           .insert({
             title: formData.get('title'),
@@ -1660,7 +1626,6 @@
       }
     });
 
-    // Form: Distribute Points
     document.getElementById('formDistributePoints').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
@@ -1670,8 +1635,7 @@
       if (!confirm('⚠️ Confirmer la distribution de ' + points + ' points par bonne réponse ?')) return;
 
       try {
-        // Récupérer le run
-        const { data: run, error: runError } = await supabase
+        const { data: run, error: runError } = await supabaseClient
           .from('runs')
           .select('*, parts(id)')
           .eq('id', runId)
@@ -1679,21 +1643,17 @@
 
         if (runError) throw runError;
 
-        // Récupérer toutes les réponses
-        const { data: answers, error: answersError } = await supabase
+        const { data: answers, error: answersError } = await supabaseClient
           .from('answers')
           .select('*')
           .eq('run_id', runId);
 
         if (answersError) throw answersError;
 
-        // Filtrer les bonnes réponses
         const correctAnswers = answers.filter(a => a.user_answer === run.admin_answer);
 
-        // Distribuer les points
         for (const answer of correctAnswers) {
-          // Récupérer le score actuel
-          const { data: currentScore } = await supabase
+          const { data: currentScore } = await supabaseClient
             .from('scores')
             .select('score')
             .eq('user_id', answer.user_id)
@@ -1701,15 +1661,13 @@
             .single();
 
           if (currentScore) {
-            // Mettre à jour le score
-            await supabase
+            await supabaseClient
               .from('scores')
               .update({ score: currentScore.score + points })
               .eq('user_id', answer.user_id)
               .eq('part_id', run.parts.id);
           } else {
-            // Créer le score
-            await supabase
+            await supabaseClient
               .from('scores')
               .insert({
                 user_id: answer.user_id,
@@ -1719,8 +1677,7 @@
           }
         }
 
-        // Marquer le run comme distribué
-        await supabase
+        await supabaseClient
           .from('runs')
           .update({ points_distributed: true })
           .eq('id', runId);
@@ -1733,7 +1690,6 @@
       }
     });
 
-    // Form: Update User
     document.getElementById('formUpdateUser').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
@@ -1742,7 +1698,7 @@
       const status = formData.get('status');
 
       try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
           .from('users')
           .update({ role, status })
           .eq('id', userId);
@@ -1757,12 +1713,11 @@
       }
     });
 
-    // Delete Functions
     async function deleteSection(id) {
       if (!confirm('⚠️ Supprimer cette section ? Cette action est irréversible.')) return;
       
       try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
           .from('sections')
           .delete()
           .eq('id', id);
@@ -1779,7 +1734,7 @@
       if (!confirm('⚠️ Supprimer cette part ? Cette action est irréversible.')) return;
       
       try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
           .from('parts')
           .delete()
           .eq('id', id);
@@ -1796,7 +1751,7 @@
       if (!confirm('⚠️ Fermer ce run ? Les joueurs ne pourront plus y répondre.')) return;
       
       try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
           .from('runs')
           .update({ is_closed: true })
           .eq('id', id);
@@ -1818,7 +1773,7 @@
       if (!confirm('⚠️ Supprimer cette actualité ? Cette action est irréversible.')) return;
       
       try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
           .from('posts_actualite')
           .delete()
           .eq('id', id);
@@ -1855,7 +1810,6 @@
       openModal('updateUser');
     }
 
-    // Close modal on outside click
     document.querySelectorAll('.modal').forEach(modal => {
       modal.addEventListener('click', (e) => {
         if (e.target === modal) {
@@ -1864,7 +1818,6 @@
       });
     });
 
-    // Check if already logged in
     (async () => {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session) {
@@ -1885,4 +1838,4 @@
     })();
   </script>
 </body>
-</html> 
+  </html>
