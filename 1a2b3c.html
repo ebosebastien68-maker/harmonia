@@ -958,19 +958,33 @@
         </div>
         <div class="form-group">
           <label>Numéro d'ordre *</label>
-          <input type="number" name="order_number" required min="1">
+          <input type="number" name="order_number" required min="1" id="partOrderNumber">
+          <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">
+            ⚠️ La première part (ordre 1) ne peut pas avoir de conditions d'accès
+          </small>
         </div>
         <div class="form-group">
           <label>Titre</label>
           <input type="text" name="title">
         </div>
-        <div class="form-group">
-          <label>Score minimum requis</label>
-          <input type="number" name="access_score_min" min="0">
-        </div>
-        <div class="form-group">
-          <label>Top classement requis</label>
-          <input type="number" name="access_rank_top" min="1">
+        <div id="accessConditionsBlock">
+          <div class="form-group">
+            <label>Part source pour le score (optionnel)</label>
+            <select name="access_score_source_part" id="selectSourcePart">
+              <option value="">Aucune condition de score</option>
+            </select>
+            <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">
+              Sélectionnez la part dont le score sera utilisé comme référence
+            </small>
+          </div>
+          <div class="form-group">
+            <label>Score minimum requis</label>
+            <input type="number" name="access_score_min" min="0" id="accessScoreMin">
+          </div>
+          <div class="form-group">
+            <label>Top classement requis</label>
+            <input type="number" name="access_rank_top" min="1" id="accessRankTop">
+          </div>
         </div>
         <div class="checkbox-group">
           <input type="checkbox" name="is_active" id="is_active_part">
@@ -1265,7 +1279,17 @@
             <td><strong>#${p.order_number}</strong></td>
             <td>${p.title || '-'}</td>
             <td><span class="badge ${p.is_active ? 'badge-success' : 'badge-warning'}">${p.is_active ? 'Oui' : 'Non'}</span></td>
-            <td><small>Score: ${p.access_score_min || '-'} | Top: ${p.access_rank_top || '-'}</small></td>
+            <td>
+              <small>
+                ${p.order_number === 1 
+                  ? '<span class="badge badge-info">Pas de conditions</span>' 
+                  : `
+                    ${p.access_score_source_part ? '📊 Score source défini | ' : ''}
+                    Score: ${p.access_score_min || '-'} | 
+                    Top: ${p.access_rank_top || '-'}
+                  `}
+              </small>
+            </td>
             <td>
               <button class="btn-icon delete" onclick="deletePart('${p.id}')">🗑️</button>
             </td>
@@ -1503,12 +1527,60 @@
 
     async function loadPartsSelect() {
       const select = document.getElementById('selectPart');
+      const sourcePartSelect = document.getElementById('selectSourcePart');
+      
       if (allParts.length === 0) {
         const { data: parts } = await supabaseClient.from('parts').select('*, sections(title)');
         allParts = parts || [];
       }
+      
       select.innerHTML = '<option value="">Sélectionner une part</option>' + 
         allParts.map(p => `<option value="${p.id}">${p.sections?.title || 'N/A'} - Part #${p.order_number} ${p.title ? '(' + p.title + ')' : ''}</option>`).join('');
+      
+      if (sourcePartSelect) {
+        sourcePartSelect.innerHTML = '<option value="">Aucune condition de score</option>' + 
+          allParts.map(p => `<option value="${p.id}">${p.sections?.title || 'N/A'} - Part #${p.order_number} ${p.title ? '(' + p.title + ')' : ''}</option>`).join('');
+      }
+    }
+
+    function openModal(modalName) {
+      document.getElementById(`modal${modalName.charAt(0).toUpperCase() + modalName.slice(1)}`).classList.add('active');
+      
+      if (modalName === 'createPart') {
+        loadSectionsSelect();
+        loadPartsSelect();
+        setupPartOrderValidation();
+      }
+      if (modalName === 'createRun') loadPartsSelect();
+    }
+
+    function setupPartOrderValidation() {
+      const orderInput = document.getElementById('partOrderNumber');
+      const accessBlock = document.getElementById('accessConditionsBlock');
+      const sourcePartSelect = document.getElementById('selectSourcePart');
+      const scoreMinInput = document.getElementById('accessScoreMin');
+      const rankTopInput = document.getElementById('accessRankTop');
+
+      orderInput.addEventListener('input', function() {
+        const orderNumber = parseInt(this.value);
+        
+        if (orderNumber === 1) {
+          accessBlock.style.opacity = '0.5';
+          accessBlock.style.pointerEvents = 'none';
+          sourcePartSelect.value = '';
+          scoreMinInput.value = '';
+          rankTopInput.value = '';
+          sourcePartSelect.disabled = true;
+          scoreMinInput.disabled = true;
+          rankTopInput.disabled = true;
+        } else {
+          accessBlock.style.opacity = '1';
+          accessBlock.style.pointerEvents = 'auto';
+          sourcePartSelect.disabled = false;
+          scoreMinInput.disabled = false;
+          rankTopInput.disabled = false;
+        }
+      });
     }
 
     document.getElementById('formCreateSection').addEventListener('submit', async (e) => {
@@ -1542,18 +1614,42 @@
     document.getElementById('formCreatePart').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
+      const orderNumber = parseInt(formData.get('order_number'));
+      
+      if (orderNumber === 1) {
+        const hasAccessConditions = formData.get('access_score_source_part') || 
+                                   formData.get('access_score_min') || 
+                                   formData.get('access_rank_top');
+        
+        if (hasAccessConditions) {
+          alert('❌ Erreur : La première part (ordre 1) ne peut pas avoir de conditions d\'accès !');
+          return;
+        }
+      }
       
       try {
+        const partData = {
+          section_id: formData.get('section_id'),
+          order_number: orderNumber,
+          title: formData.get('title') || null,
+          is_active: formData.get('is_active') === 'on'
+        };
+
+        if (orderNumber !== 1) {
+          if (formData.get('access_score_source_part')) {
+            partData.access_score_source_part = formData.get('access_score_source_part');
+          }
+          if (formData.get('access_score_min')) {
+            partData.access_score_min = parseInt(formData.get('access_score_min'));
+          }
+          if (formData.get('access_rank_top')) {
+            partData.access_rank_top = parseInt(formData.get('access_rank_top'));
+          }
+        }
+
         const { data, error } = await supabaseClient
           .from('parts')
-          .insert({
-            section_id: formData.get('section_id'),
-            order_number: parseInt(formData.get('order_number')),
-            title: formData.get('title') || null,
-            access_score_min: formData.get('access_score_min') ? parseInt(formData.get('access_score_min')) : null,
-            access_rank_top: formData.get('access_rank_top') ? parseInt(formData.get('access_rank_top')) : null,
-            is_active: formData.get('is_active') === 'on'
-          })
+          .insert(partData)
           .select();
 
         if (error) throw error;
@@ -1561,6 +1657,7 @@
         alert('✅ Part créée avec succès !');
         closeModal('createPart');
         e.target.reset();
+        allParts = [];
         loadParts();
       } catch (error) {
         alert('❌ Erreur: ' + error.message);
