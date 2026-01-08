@@ -459,10 +459,10 @@
 
     <script>
         // Configuration
-        const EDGE_FUNCTION_URL = 'https://dfccebkmiebkqfwdudjg.supabase.co/functions/v1/vraifaux'
-        const ALLOWED_DOMAIN = 'https://harmonia-lyart.vercel.app';
+        const EDGE_FUNCTION_URL = 'https://dfccebkmiebkqfwdudjg.supabase.co/functions/v1/vraifaux'; // À remplacer
         
         // État global
+        let currentSession = null;
         let currentUser = null;
         let userWallet = null;
         let sections = [];
@@ -472,32 +472,86 @@
         let timerInterval = null;
         let selectedAnswer = null;
 
-        // Récupérer le token depuis le localStorage
-        function getAuthToken() {
-            return localStorage.getItem('supabase_auth_token');
+        // Charger la session depuis localStorage
+        function loadSession() {
+            const sessionStr = localStorage.getItem('session');
+            if (!sessionStr) {
+                console.error('❌ Pas de session dans localStorage');
+                return null;
+            }
+            
+            try {
+                currentSession = JSON.parse(sessionStr);
+                console.log('✅ Session chargée:', currentSession.user.email);
+                return currentSession;
+            } catch (error) {
+                console.error('❌ Erreur parsing session:', error);
+                return null;
+            }
+        }
+
+        // Vérifier l'authentification
+        function checkAuth() {
+            const session = loadSession();
+            
+            if (!session) {
+                showError('Vous devez être connecté pour accéder à cette page');
+                setTimeout(() => {
+                    // Rediriger vers con.html ou l'accueil
+                    window.location.href = 'con.html';
+                }, 2000);
+                return false;
+            }
+            
+            // Vérifier si le token n'a pas expiré
+            if (session.expires_at && Date.now() > session.expires_at * 1000) {
+                localStorage.removeItem('session');
+                showError('Session expirée. Veuillez vous reconnecter.');
+                setTimeout(() => {
+                    window.location.href = 'con.html';
+                }, 2000);
+                return false;
+            }
+            
+            currentUser = session.user;
+            return true;
+        }
+
+        // Récupérer les headers d'authentification
+        function getAuthHeaders() {
+            if (!currentSession) {
+                loadSession();
+            }
+            
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentSession.access_token}`
+            };
         }
 
         // Appel API générique
         async function callAPI(action, data = {}) {
-            const token = getAuthToken();
-            
-            if (!token) {
-                throw new Error('Non authentifié');
+            if (!currentSession) {
+                throw new Error('Non authentifié - Veuillez vous connecter');
             }
 
             const response = await fetch(EDGE_FUNCTION_URL, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    'Origin': ALLOWED_DOMAIN
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ action, ...data })
             });
 
             const result = await response.json();
             
             if (!response.ok) {
+                // Si erreur 401, session expirée
+                if (response.status === 401) {
+                    localStorage.removeItem('session');
+                    showError('Session expirée. Redirection...');
+                    setTimeout(() => {
+                        window.location.href = 'con.html';
+                    }, 2000);
+                }
                 throw new Error(result.message || 'Erreur API');
             }
 
@@ -507,6 +561,13 @@
         // Initialisation
         async function init() {
             try {
+                // Vérifier l'authentification
+                if (!checkAuth()) {
+                    return;
+                }
+                
+                console.log('✅ Utilisateur authentifié:', currentUser.email);
+
                 // Charger le wallet
                 const walletData = await callAPI('load_wallet');
                 userWallet = walletData.wallet;
@@ -788,4 +849,4 @@
         window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
-</html>
+    </html>
