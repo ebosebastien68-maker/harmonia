@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vrai ou Faux</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .wallet-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            background: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .content-section {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .section-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .section-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .section-card.joined {
+            background: #e8f5e9;
+            border-color: #4caf50;
+        }
+
+        .section-card.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .section-cost {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        .section-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .parts-list {
+            margin-top: 20px;
+        }
+
+        .part-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .part-item.active {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+        }
+
+        .part-item.locked {
+            opacity: 0.6;
+        }
+
+        .run-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .question {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .answer-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .answer-btn {
+            flex: 1;
+            max-width: 200px;
+            padding: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            border: 3px solid;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .answer-btn.true {
+            background: #e8f5e9;
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+
+        .answer-btn.false {
+            background: #ffebee;
+            border-color: #f44336;
+            color: #c62828;
+        }
+
+        .answer-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .answer-btn.selected {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .timer {
+            text-align: center;
+            font-size: 48px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .timer.warning {
+            color: #ff9800;
+            animation: pulse 1s infinite;
+        }
+
+        .timer.danger {
+            color: #f44336;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .leaderboard {
+            margin-top: 20px;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .rank {
+            font-size: 24px;
+            font-weight: bold;
+            margin-right: 20px;
+            color: #667eea;
+            min-width: 40px;
+        }
+
+        .rank.gold { color: #ffd700; }
+        .rank.silver { color: #c0c0c0; }
+        .rank.bronze { color: #cd7f32; }
+
+        .player-name {
+            flex: 1;
+            font-weight: bold;
+        }
+
+        .score {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4caf50;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .results-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .result-correct {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+
+        .result-incorrect {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge-active {
+            background: #4caf50;
+            color: white;
+        }
+
+        .badge-inactive {
+            background: #999;
+            color: white;
+        }
+
+        .badge-locked {
+            background: #ff9800;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Vrai ou Faux</h1>
+            <div class="user-info">
+                <div class="wallet-display">
+                    💰 <span id="balance">0</span> FCFA
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('participate')">Participer</button>
+            <button class="tab" onclick="switchTab('play')">Jouer</button>
+            <button class="tab" onclick="switchTab('results')">Résultats</button>
+            <button class="tab" onclick="switchTab('leaderboard')">Classement</button>
+        </div>
+
+        <!-- TAB: Participer -->
+        <div id="participate-section" class="content-section active">
+            <h2>Sections Disponibles</h2>
+            <div id="sections-container" class="section-grid">
+                <div class="loading">Chargement des sections...</div>
+            </div>
+        </div>
+
+        <!-- TAB: Jouer -->
+        <div id="play-section" class="content-section">
+            <h2>Mes Parties</h2>
+            <div id="my-parts-container" class="parts-list">
+                <div class="loading">Chargement de vos parties...</div>
+            </div>
+            
+            <div id="game-container" style="display: none;">
+                <div class="run-card">
+                    <div class="timer" id="timer">--</div>
+                    <div class="question" id="question">Question...</div>
+                    <div class="answer-buttons">
+                        <button class="answer-btn true" onclick="submitAnswer(true)">
+                            ✓ VRAI
+                        </button>
+                        <button class="answer-btn false" onclick="submitAnswer(false)">
+                            ✗ FAUX
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Résultats -->
+        <div id="results-section" class="content-section">
+            <h2>Mes Résultats</h2>
+            <div id="results-container">
+                <div class="loading">Chargement des résultats...</div>
+            </div>
+        </div>
+
+        <!-- TAB: Classement -->
+        <div id="leaderboard-section" class="content-section">
+            <h2>Classement Général</h2>
+            <select id="part-select" onchange="loadLeaderboard()" style="padding: 10px; border-radius: 6px; margin-bottom: 20px; width: 100%;">
+                <option value="">Sélectionner une partie</option>
+            </select>
+            <div id="leaderboard-container" class="leaderboard">
+                <div class="loading">Sélectionnez une partie pour voir le classement</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const EDGE_FUNCTION_URL = 'YOUR_EDGE_FUNCTION_URL'; // À remplacer
+        const ALLOWED_DOMAIN = 'https://harmonia-lyart.vercel.app';
+        
+        // État global
+        let currentUser = null;
+        let userWallet = null;
+        let sections = [];
+        let userSections = [];
+        let currentPart = null;
+        let currentRun = null;
+        let timerInterval = null;
+        let selectedAnswer = null;
+
+        // Récupérer le token depuis le localStorage
+        function getAuthToken() {
+            return localStorage.getItem('supabase_auth_token');
+        }
+
+        // Appel API générique
+        async function callAPI(action, data = {}) {
+            const token = getAuthToken();
+            
+            if (!token) {
+                throw new Error('Non authentifié');
+            }
+
+            const response = await fetch(EDGE_FUNCTION_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'Origin': ALLOWED_DOMAIN
+                },
+                body: JSON.stringify({ action, ...data })
+            });
+
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.message || 'Erreur API');
+            }
+
+            return result;
+        }
+
+        // Initialisation
+        async function init() {
+            try {
+                // Charger le wallet
+                const walletData = await callAPI('load_wallet');
+                userWallet = walletData.wallet;
+                document.getElementById('balance').textContent = userWallet.balance;
+
+                // Charger les sections
+                await loadSections();
+            } catch (error) {
+                console.error('Erreur init:', error);
+                showError('Erreur de chargement: ' + error.message);
+            }
+        }
+
+        // Charger les sections
+        async function loadSections() {
+            try {
+                const data = await callAPI('load_sections');
+                sections = data.sections;
+                
+                const data2 = await callAPI('load_user_sections');
+                userSections = data2.user_sections || [];
+
+                renderSections();
+            } catch (error) {
+                console.error('Erreur sections:', error);
+                showError('Erreur de chargement des sections');
+            }
+        }
+
+        // Afficher les sections
+        function renderSections() {
+            const container = document.getElementById('sections-container');
+            
+            if (sections.length === 0) {
+                container.innerHTML = '<div class="no-data">Aucune section disponible</div>';
+                return;
+            }
+
+            container.innerHTML = sections.map(section => {
+                const isJoined = userSections.some(us => us.section_id === section.id);
+                const canJoin = section.allow_join && userWallet.balance >= section.participation_cost;
+
+                return `
+                    <div class="section-card ${isJoined ? 'joined' : ''} ${!canJoin && !isJoined ? 'locked' : ''}"
+                         onclick="${isJoined ? `loadParts('${section.id}')` : `joinSection('${section.id}')`}">
+                        <div class="section-title">${section.title}</div>
+                        <div class="section-cost">💰 ${section.participation_cost} FCFA</div>
+                        <div class="section-description">${section.description || 'Aucune description'}</div>
+                        ${isJoined ? 
+                            '<button class="btn btn-success">✓ Inscrit - Jouer</button>' :
+                            canJoin ?
+                                '<button class="btn btn-primary">Rejoindre</button>' :
+                                '<button class="btn btn-disabled">Solde insuffisant</button>'
+                        }
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Rejoindre une section
+        async function joinSection(sectionId) {
+            if (!confirm('Voulez-vous rejoindre cette section ?')) return;
+
+            try {
+                await callAPI('join_section', { section_id: sectionId });
+                showSuccess('Section rejointe avec succès !');
+                await init(); // Recharger
+            } catch (error) {
+                showError('Erreur: ' + error.message);
+            }
+        }
+
+        // Charger les parties d'une section
+        async function loadParts(sectionId) {
+            try {
+                const data = await callAPI('load_parts', { section_id: sectionId });
+                renderParts(data.parts);
+                switchTab('play');
+            } catch (error) {
+                showError('Erreur de chargement des parties');
+            }
+        }
+
+        // Afficher les parties
+        function renderParts(parts) {
+            const container = document.getElementById('my-parts-container');
+            
+            container.innerHTML = parts.map(part => {
+                const hasAccess = part.has_access || part.order_number === 1;
+                
+                return `
+                    <div class="part-item ${part.is_active ? 'active' : ''} ${!hasAccess ? 'locked' : ''}"
+                         onclick="${hasAccess && part.is_active ? `loadRuns('${part.id}')` : ''}">
+                        <div>
+                            <strong>Partie ${part.order_number}</strong>
+                            ${part.title ? ` - ${part.title}` : ''}
+                            ${part.is_active ? '<span class="badge badge-active">Active</span>' : '<span class="badge badge-inactive">Inactive</span>'}
+                            ${!hasAccess ? '<span class="badge badge-locked">🔒 Verrouillée</span>' : ''}
+                        </div>
+                        ${hasAccess && part.is_active ? '<button class="btn btn-primary">Jouer</button>' : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Charger les runs (questions)
+        async function loadRuns(partId) {
+            try {
+                currentPart = partId;
+                const data = await callAPI('load_current_run', { part_id: partId });
+                
+                if (data.run) {
+                    currentRun = data.run;
+                    startGame();
+                } else {
+                    showError('Aucune question active pour le moment');
+                }
+            } catch (error) {
+                showError('Erreur: ' + error.message);
+            }
+        }
+
+        // Démarrer le jeu
+        function startGame() {
+            document.getElementById('my-parts-container').style.display = 'none';
+            document.getElementById('game-container').style.display = 'block';
+            
+            document.getElementById('question').textContent = currentRun.question;
+            
+            // Timer
+            let timeLeft = currentRun.time_limit;
+            updateTimer(timeLeft);
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimer(timeLeft);
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    showError('Temps écoulé !');
+                    setTimeout(() => location.reload(), 2000);
+                }
+            }, 1000);
+        }
+
+        // Mettre à jour le timer
+        function updateTimer(seconds) {
+            const timerEl = document.getElementById('timer');
+            timerEl.textContent = seconds;
+            
+            if (seconds <= 10) {
+                timerEl.className = 'timer danger';
+            } else if (seconds <= 30) {
+                timerEl.className = 'timer warning';
+            } else {
+                timerEl.className = 'timer';
+            }
+        }
+
+        // Soumettre une réponse
+        async function submitAnswer(answer) {
+            if (!currentRun) return;
+            
+            clearInterval(timerInterval);
+            
+            try {
+                await callAPI('submit_answer', {
+                    run_id: currentRun.id,
+                    user_answer: answer
+                });
+                
+                showSuccess('Réponse enregistrée !');
+                setTimeout(() => location.reload(), 2000);
+            } catch (error) {
+                showError('Erreur: ' + error.message);
+            }
+        }
+
+        // Charger le leaderboard
+        async function loadLeaderboard() {
+            const partId = document.getElementById('part-select').value;
+            
+            if (!partId) return;
+            
+            try {
+                const data = await callAPI('load_leaderboard', { part_id: partId });
+                renderLeaderboard(data.leaderboard);
+            } catch (error) {
+                showError('Erreur leaderboard');
+            }
+        }
+
+        // Afficher le leaderboard
+        function renderLeaderboard(leaderboard) {
+            const container = document.getElementById('leaderboard-container');
+            
+            if (leaderboard.length === 0) {
+                container.innerHTML = '<div class="no-data">Aucun score</div>';
+                return;
+            }
+            
+            container.innerHTML = leaderboard.map((item, index) => {
+                let rankClass = '';
+                if (index === 0) rankClass = 'gold';
+                else if (index === 1) rankClass = 'silver';
+                else if (index === 2) rankClass = 'bronze';
+                
+                return `
+                    <div class="leaderboard-item">
+                        <div class="rank ${rankClass}">#${index + 1}</div>
+                        <div class="player-name">${item.username}</div>
+                        <div class="score">${item.score} pts</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Changer d'onglet
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-section').classList.add('active');
+            
+            if (tabName === 'results') {
+                loadResults();
+            }
+        }
+
+        // Charger les résultats
+        async function loadResults() {
+            try {
+                const data = await callAPI('load_my_results');
+                renderResults(data.results);
+            } catch (error) {
+                showError('Erreur résultats');
+            }
+        }
+
+        // Afficher les résultats
+        function renderResults(results) {
+            const container = document.getElementById('results-container');
+            
+            if (results.length === 0) {
+                container.innerHTML = '<div class="no-data">Aucun résultat</div>';
+                return;
+            }
+            
+            container.innerHTML = results.map(result => `
+                <div class="result-item ${result.is_correct ? 'result-correct' : 'result-incorrect'}">
+                    <div>
+                        <strong>${result.question}</strong>
+                        <div>Votre réponse: ${result.user_answer ? 'VRAI' : 'FAUX'}</div>
+                    </div>
+                    <div class="score">${result.is_correct ? '✓' : '✗'}</div>
+                </div>
+            `).join('');
+        }
+
+        // Utilitaires
+        function showError(message) {
+            const div = document.createElement('div');
+            div.className = 'error';
+            div.textContent = message;
+            document.querySelector('.container').insertBefore(div, document.querySelector('.tabs'));
+            setTimeout(() => div.remove(), 5000);
+        }
+
+        function showSuccess(message) {
+            const div = document.createElement('div');
+            div.className = 'success';
+            div.textContent = message;
+            document.querySelector('.container').insertBefore(div, document.querySelector('.tabs'));
+            setTimeout(() => div.remove(), 5000);
+        }
+
+        // Initialiser au chargement
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
