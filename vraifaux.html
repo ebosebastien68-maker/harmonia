@@ -459,7 +459,7 @@
 
     <script>
         // Configuration
-        const EDGE_FUNCTION_URL = 'https://dfccebkmiebkqfwdudjg.supabase.co/functions/v1/vraifaux'; // À remplacer
+        const EDGE_FUNCTION_URL = 'YOUR_EDGE_FUNCTION_URL'; // À remplacer
         
         // État global
         let currentSession = null;
@@ -608,11 +608,12 @@
 
             container.innerHTML = sections.map(section => {
                 const isJoined = userSections.some(us => us.section_id === section.id);
-                const canJoin = section.allow_join && userWallet.balance >= section.participation_cost;
+                const canJoin = section.allow_join && !isJoined && userWallet.balance >= section.participation_cost;
+                const canAfford = userWallet.balance >= section.participation_cost;
 
                 return `
-                    <div class="section-card ${isJoined ? 'joined' : ''} ${!canJoin && !isJoined ? 'locked' : ''}"
-                         onclick="${isJoined ? `loadParts('${section.id}')` : `joinSection('${section.id}')`}">
+                    <div class="section-card ${isJoined ? 'joined' : ''} ${!canAfford && !isJoined && section.participation_cost > 0 ? 'locked' : ''}"
+                         ${isJoined ? `onclick="loadParts('${section.id}')"` : canJoin ? `onclick="joinSection('${section.id}')"` : ''}>
                         <div class="section-title">${section.title}</div>
                         <div class="section-cost">💰 ${section.participation_cost} FCFA</div>
                         <div class="section-description">${section.description || 'Aucune description'}</div>
@@ -620,7 +621,9 @@
                             '<button class="btn btn-success">✓ Inscrit - Jouer</button>' :
                             canJoin ?
                                 '<button class="btn btn-primary">Rejoindre</button>' :
-                                '<button class="btn btn-disabled">Solde insuffisant</button>'
+                                section.participation_cost > 0 && !canAfford ?
+                                    '<button class="btn btn-disabled">Solde insuffisant</button>' :
+                                    '<button class="btn btn-disabled">Indisponible</button>'
                         }
                     </div>
                 `;
@@ -643,11 +646,22 @@
         // Charger les parties d'une section
         async function loadParts(sectionId) {
             try {
+                console.log('📚 Chargement des parties section:', sectionId);
+                
                 const data = await callAPI('load_parts', { section_id: sectionId });
+                
+                console.log('✅ Parties reçues:', data.parts);
+                
+                if (!data.parts || data.parts.length === 0) {
+                    showError('Aucune partie disponible dans cette section');
+                    return;
+                }
+                
                 renderParts(data.parts);
                 switchTab('play');
             } catch (error) {
-                showError('Erreur de chargement des parties');
+                console.error('Erreur chargement parties:', error);
+                showError('Erreur de chargement des parties: ' + error.message);
             }
         }
 
@@ -655,37 +669,58 @@
         function renderParts(parts) {
             const container = document.getElementById('my-parts-container');
             
+            console.log('🎨 Affichage de', parts.length, 'parties');
+            
+            if (parts.length === 0) {
+                container.innerHTML = '<div class="no-data">Aucune partie disponible</div>';
+                return;
+            }
+            
             container.innerHTML = parts.map(part => {
                 const hasAccess = part.has_access || part.order_number === 1;
+                const canPlay = hasAccess && part.is_active;
+                
+                console.log(`Partie ${part.order_number}: access=${hasAccess}, active=${part.is_active}, canPlay=${canPlay}`);
                 
                 return `
                     <div class="part-item ${part.is_active ? 'active' : ''} ${!hasAccess ? 'locked' : ''}"
-                         onclick="${hasAccess && part.is_active ? `loadRuns('${part.id}')` : ''}">
+                         ${canPlay ? `onclick="loadRuns('${part.id}')"` : ''}>
                         <div>
                             <strong>Partie ${part.order_number}</strong>
                             ${part.title ? ` - ${part.title}` : ''}
                             ${part.is_active ? '<span class="badge badge-active">Active</span>' : '<span class="badge badge-inactive">Inactive</span>'}
                             ${!hasAccess ? '<span class="badge badge-locked">🔒 Verrouillée</span>' : ''}
                         </div>
-                        ${hasAccess && part.is_active ? '<button class="btn btn-primary">Jouer</button>' : ''}
+                        ${canPlay ? '<button class="btn btn-primary">Jouer</button>' : ''}
                     </div>
                 `;
             }).join('');
+            
+            // Réinitialiser l'affichage du jeu
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('my-parts-container').style.display = 'block';
         }
 
         // Charger les runs (questions)
         async function loadRuns(partId) {
             try {
+                console.log('🎯 Chargement run partie:', partId);
+                
                 currentPart = partId;
                 const data = await callAPI('load_current_run', { part_id: partId });
                 
+                console.log('✅ Données run reçues:', data);
+                
                 if (data.run) {
                     currentRun = data.run;
+                    console.log('🎮 Run trouvé:', currentRun.question);
                     startGame();
                 } else {
-                    showError('Aucune question active pour le moment');
+                    console.log('⚠️ Aucun run actif');
+                    showError(data.message || 'Aucune question active pour le moment');
                 }
             } catch (error) {
+                console.error('Erreur chargement run:', error);
                 showError('Erreur: ' + error.message);
             }
         }
@@ -787,14 +822,35 @@
 
         // Changer d'onglet
         function switchTab(tabName) {
+            console.log('🔄 Changement onglet:', tabName);
+            
+            // Retirer les classes actives
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
             
-            event.target.classList.add('active');
-            document.getElementById(tabName + '-section').classList.add('active');
+            // Trouver et activer le bon onglet
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                if (tab.textContent.toLowerCase().includes(tabName.toLowerCase()) || 
+                    (tabName === 'participate' && tab.textContent.includes('Participer')) ||
+                    (tabName === 'play' && tab.textContent.includes('Jouer')) ||
+                    (tabName === 'results' && tab.textContent.includes('Résultats')) ||
+                    (tabName === 'leaderboard' && tab.textContent.includes('Classement'))) {
+                    tab.classList.add('active');
+                }
+            });
             
+            // Activer la section correspondante
+            const section = document.getElementById(tabName + '-section');
+            if (section) {
+                section.classList.add('active');
+            }
+            
+            // Charger les données si nécessaire
             if (tabName === 'results') {
                 loadResults();
+            } else if (tabName === 'leaderboard') {
+                loadPartSelectForLeaderboard();
             }
         }
 
