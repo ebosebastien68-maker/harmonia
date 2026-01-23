@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Awalé - Gestion Tournois</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .section-selector {
+            margin-bottom: 20px;
+        }
+
+        .section-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #da190b;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: #ff9800;
+            color: white;
+        }
+
+        .btn-disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-disabled:hover {
+            transform: none;
+        }
+
+        .player-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .player-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .player-item.eliminated {
+            opacity: 0.5;
+            background: #ffebee;
+        }
+
+        .player-name {
+            font-weight: bold;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge-active {
+            background: #4caf50;
+            color: white;
+        }
+
+        .badge-eliminated {
+            background: #f44336;
+            color: white;
+        }
+
+        .badge-round {
+            background: #2196f3;
+            color: white;
+        }
+
+        .match-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .match-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .match-item.finished {
+            background: #e8f5e9;
+            border-left-color: #4caf50;
+        }
+
+        .match-item.playing {
+            background: #fff3e0;
+            border-left-color: #ff9800;
+            animation: pulse-match 2s infinite;
+        }
+
+        @keyframes pulse-match {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .match-players {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .match-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .status-waiting {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-playing {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status-finished {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .info {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 16px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .config-form {
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .alert-box {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-warning {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            color: #e65100;
+        }
+
+        .alert-danger {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            color: #c62828;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            color: #2e7d32;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Admin Awalé - Gestion des Tournois</h1>
+            <p class="subtitle">Gérez les inscriptions, lancez les rounds et suivez les matchs en temps réel</p>
+        </div>
+
+        <div id="message-container"></div>
+
+        <!-- Sélecteur de section/partie -->
+        <div class="card">
+            <h2>Sélection du Tournoi</h2>
+            <div class="section-selector">
+                <label style="display: block; margin-bottom: 10px; font-weight: bold;">Section</label>
+                <select id="section-select" onchange="loadSectionParts()">
+                    <option value="">Chargement...</option>
+                </select>
+            </div>
+            <div class="section-selector">
+                <label style="display: block; margin-bottom: 10px; font-weight: bold;">Partie</label>
+                <select id="part-select" onchange="loadPartData()">
+                    <option value="">Sélectionnez d'abord une section</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="dashboard" id="dashboard" style="display: none;">
+            <div class="card">
+                <div class="stat-box">
+                    <div class="stat-number" id="total-players">0</div>
+                    <div class="stat-label">Joueurs Inscrits</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="stat-box" style="background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);">
+                    <div class="stat-number" id="eligible-players">0</div>
+                    <div class="stat-label">Joueurs Éligibles</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="stat-box" style="background: linear-gradient(135deg, #f44336 0%, #da190b 100%);">
+                    <div class="stat-number" id="eliminated-players">0</div>
+                    <div class="stat-label">Joueurs Éliminés</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="stat-box" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);">
+                    <div class="stat-number" id="current-round">0</div>
+                    <div class="stat-label">Round Actuel</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contrôles et Listes -->
+        <div class="grid-2" id="main-content" style="display: none;">
+            <!-- Contrôles Admin -->
+            <div>
+                <div class="card">
+                    <h2>⚙️ Configuration</h2>
+                    <div class="config-form">
+                        <div class="form-group">
+                            <label>Timeout par coup (secondes)</label>
+                            <input type="number" id="timeout-input" value="30" min="10" max="120">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>🎮 Contrôles du Tournoi</h2>
+                    
+                    <div id="round-info"></div>
+                    
+                    <button class="btn btn-primary" id="start-tournament-btn" onclick="startTournament()" style="display: none;">
+                        🚀 Démarrer le Tournoi
+                    </button>
+                    
+                    <button class="btn btn-success" id="launch-round-btn" onclick="launchNextRound()" style="display: none;">
+                        ▶️ Lancer Round <span id="next-round-number">1</span>
+                    </button>
+                    
+                    <button class="btn btn-warning" onclick="refreshData()">
+                        🔄 Actualiser les Données
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h2>👥 Liste des Joueurs</h2>
+                    <div id="players-list" class="player-list">
+                        <div class="loading">Sélectionnez une partie</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Matchs en cours -->
+            <div>
+                <div class="card">
+                    <h2>🏆 Matchs du Round Actuel</h2>
+                    <div id="matches-list" class="match-list">
+                        <div class="loading">Aucun match en cours</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const EDGE_FUNCTION_URL = 'https://dfccebkmiebkqfwdudjg.supabase.co/functions/v1/awale'
+        
+        // État global
+        let currentSession = null;
+        let currentUser = null;
+        let currentSectionId = null;
+        let currentPartId = null;
+        let partConfig = null;
+        let players = [];
+        let matches = [];
+        let refreshInterval = null;
+
+        // Charger la session
+        function loadSession() {
+            const sessionStr = localStorage.getItem('session');
+            if (!sessionStr) return null;
+            
+            try {
+                currentSession = JSON.parse(sessionStr);
+                return currentSession;
+            } catch (error) {
+                return null;
+            }
+        }
+
+        // Vérifier l'authentification et le rôle admin
+        function checkAuth() {
+            const session = loadSession();
+            
+            if (!session) {
+                showError('Vous devez être connecté');
+                setTimeout(() => window.location.href = 'con.html', 2000);
+                return false;
+            }
+            
+            // Note: La vérification admin sera faite côté serveur
+            currentUser = session.user;
+            return true;
+        }
+
+        // Headers d'authentification
+        function getAuthHeaders() {
+            if (!currentSession) loadSession();
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentSession.access_token}`
+            };
+        }
+
+        // Appel API
+        async function callAPI(action, data = {}) {
+            if (!currentSession) throw new Error('Non authentifié');
+
+            const response = await fetch(EDGE_FUNCTION_URL, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ action, ...data })
+            });
+
+            const result = await response.json();
+            
+            if (!response.ok) {
+                if (response.status === 401) {
+                    localStorage.removeItem('session');
+                    showError('Session expirée');
+                    setTimeout(() => window.location.href = 'con.html', 2000);
+                }
+                throw new Error(result.message || 'Erreur API');
+            }
+
+            return result;
+        }
+
+        // Initialisation
+        async function init() {
+            try {
+                if (!checkAuth()) return;
+                
+                console.log('✅ Admin connecté:', currentUser.email);
+                await loadSections();
+            } catch (error) {
+                console.error('Erreur init:', error);
+                showError('Erreur de chargement: ' + error.message);
+            }
+        }
+
+        // Charger les sections
+        async function loadSections() {
+            try {
+                const data = await callAPI('load_sections');
+                const sections = data.sections || [];
+                
+                const select = document.getElementById('section-select');
+                select.innerHTML = '<option value="">Sélectionnez une section</option>' +
+                    sections.map(s => `<option value="${s.id}">${s.title}</option>`).join('');
+                    
+            } catch (error) {
+                showError('Erreur chargement sections: ' + error.message);
+            }
+        }
+
+        // Charger les parties d'une section
+        async function loadSectionParts() {
+            const sectionId = document.getElementById('section-select').value;
+            if (!sectionId) return;
+            
+            currentSectionId = sectionId;
+            
+            try {
+                const data = await callAPI('load_parts', { section_id: sectionId });
+                const parts = data.parts || [];
+                
+                const select = document.getElementById('part-select');
+                select.innerHTML = '<option value="">Sélectionnez une partie</option>' +
+                    parts.map(p => `<option value="${p.id}">Partie ${p.order_number}${p.title ? ' - ' + p.title : ''}</option>`).join('');
+                    
+            } catch (error) {
+                showError('Erreur chargement parties: ' + error.message);
+            }
+        }
+
+        // Charger les données d'une partie
+        async function loadPartData() {
+            const partId = document.getElementById('part-select').value;
+            if (!partId) return;
+            
+            currentPartId = partId;
+            
+            document.getElementById('dashboard').style.display = 'grid';
+            document.getElementById('main-content').style.display = 'grid';
+            
+            await refreshData();
+            
+            // Auto-refresh toutes les 5 secondes
+            if (refreshInterval) clearInterval(refreshInterval);
+            refreshInterval = setInterval(refreshData, 5000);
+        }
+
+        // Actualiser toutes les données
+        async function refreshData() {
+            if (!currentPartId) return;
+            
+            try {
+                await Promise.all([
+                    loadConfig(),
+                    loadPlayers(),
+                    loadMatches()
+                ]);
+                
+                updateUI();
+            } catch (error) {
+                console.error('Erreur refresh:', error);
+            }
+        }
+
+        // Charger la configuration
+        async function loadConfig() {
+            const data = await callAPI('load_awale_config', { part_id: currentPartId });
+            partConfig = data.config;
+            
+            if (partConfig) {
+                document.getElementById('timeout-input').value = partConfig.move_timeout_seconds;
+                document.getElementById('current-round').textContent = partConfig.current_round;
+            }
+        }
+
+        // Charger les joueurs
+        async function loadPlayers() {
+            const data = await callAPI('load_user_sections');
+            const allUserSections = data.user_sections || [];
+            
+            // Filtrer pour la section actuelle
+            const sectionId = document.getElementById('section-select').value;
+            players = allUserSections.filter(us => us.section_id === sectionId);
+        }
+
+        // Charger les matchs
+        async function loadMatches() {
+            try {
+                // Charger tous les runs de cette partie
+                const data = await callAPI('load_part_runs', { part_id: currentPartId });
+                matches = data.runs || [];
+            } catch (error) {
+                console.log('Aucun match chargé');
+                matches = [];
+            }
+        }
+
+        // Mettre à jour l'UI
+        function updateUI() {
+            // Stats
+            const totalPlayers = players.length;
+            const eligiblePlayers = players.filter(p => !p.is_eliminated).length;
+            const eliminatedPlayers = players.filter(p => p.is_eliminated).length;
+            
+            document.getElementById('total-players').textContent = totalPlayers;
+            document.getElementById('eligible-players').textContent = eligiblePlayers;
+            document.getElementById('eliminated-players').textContent = eliminatedPlayers;
+            
+            // Vérifier si nombre pair
+            const isEven = eligiblePlayers % 2 === 0;
+            const nextRound = partConfig ? partConfig.current_round + 1 : 1;
+            
+            document.getElementById('next-round-number').textContent = nextRound;
+            
+            // Afficher les alertes
+            const roundInfo = document.getElementById('round-info');
+            
+            if (eligiblePlayers === 0) {
+                roundInfo.innerHTML = '<div class="alert-warning">⚠️ Aucun joueur inscrit</div>';
+                document.getElementById('launch-round-btn').style.display = 'none';
+                document.getElementById('start-tournament-btn').style.display = 'none';
+            } else if (eligiblePlayers === 1) {
+                roundInfo.innerHTML = '<div class="alert-success">🏆 Champion: ' + 
+                    players.find(p => !p.is_eliminated)?.section?.title + '</div>';
+                document.getElementById('launch-round-btn').style.display = 'none';
+            } else if (!isEven) {
+                roundInfo.innerHTML = `<div class="alert-danger">❌ Nombre impair de joueurs (${eligiblePlayers}). Impossible de créer des paires.</div>`;
+                document.getElementById('launch-round-btn').style.display = 'none';
+            } else {
+                roundInfo.innerHTML = `<div class="alert-success">✅ ${eligiblePlayers} joueurs éligibles - Prêt à lancer le round ${nextRound}</div>`;
+                document.getElementById('launch-round-btn').style.display = 'block';
+            }
+            
+            // Liste des joueurs
+            renderPlayers();
+            
+            // Liste des matchs
+            renderMatches();
+        }
+
+        // Afficher les joueurs
+        function renderPlayers() {
+            const container = document.getElementById('players-list');
+            
+            if (players.length === 0) {
+                container.innerHTML = '<div class="loading">Aucun joueur inscrit</div>';
+                return;
+            }
+            
+            container.innerHTML = players.map(player => `
+                <div class="player-item ${player.is_eliminated ? 'eliminated' : ''}">
+                    <div>
+                        <div class="player-name">${player.section.title || 'Joueur'}</div>
+                        ${player.is_eliminated ? 
+                            `<div style="font-size: 12px; color: #666;">Éliminé au Round ${player.eliminated_in_round}</div>` : 
+                            '<div style="font-size: 12px; color: #4caf50;">Actif</div>'
+                        }
+                    </div>
+                    <span class="badge ${player.is_eliminated ? 'badge-eliminated' : 'badge-active'}">
+                        ${player.is_eliminated ? 'Éliminé' : 'Actif'}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        // Afficher les matchs
+        function renderMatches() {
+            const container = document.getElementById('matches-list');
+            
+            if (!partConfig || partConfig.current_round === 0) {
+                container.innerHTML = '<div class="loading">Aucun round lancé</div>';
+                return;
+            }
+            
+            const currentRoundMatches = matches.filter(m => m.round_number === partConfig.current_round);
+            
+            if (currentRoundMatches.length === 0) {
+                container.innerHTML = '<div class="loading">Aucun match pour ce round</div>';
+                return;
+            }
+            
+            container.innerHTML = currentRoundMatches.map(match => `
+                <div class="match-item ${match.status}">
+                    <div class="match-header">
+                        <div class="match-players">
+                            ${match.player1?.username || 'Joueur 1'} 
+                            vs 
+                            ${match.player2?.username || 'Joueur 2'}
+                        </div>
+                        <span class="match-status status-${match.status}">
+                            ${match.status === 'waiting' ? 'En attente' : 
+                              match.status === 'playing' ? 'En cours' : 
+                              'Terminé'}
+                        </span>
+                    </div>
+                    ${match.status === 'finished' ? `
+                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>${match.player1?.username}: ${match.player1_final_score}</span>
+                                <span>${match.player2?.username}: ${match.player2_final_score}</span>
+                            </div>
+                            <div style="margin-top: 5px; font-weight: bold; color: #4caf50;">
+                                🏆 Gagnant: ${match.winner?.username || 'N/A'}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Lancer le prochain round
+        async function launchNextRound() {
+            if (!currentPartId) return;
+            
+            const timeout = parseInt(document.getElementById('timeout-input').value);
+            const nextRound = partConfig ? partConfig.current_round + 1 : 1;
+            
+            if (!confirm(`Lancer le Round ${nextRound} avec un timeout de ${timeout}s par coup ?`)) {
+                return;
+            }
+            
+            try {
+                showInfo('Création des matchs en cours...');
+                
+                const data = await callAPI('create_awale_round', {
+                    part_id: currentPartId,
+                    round_number: nextRound,
+                    move_timeout_seconds: timeout
+                });
+                
+                showSuccess(`✅ Round ${nextRound} lancé ! ${data.matches.length} matchs créés.`);
+                
+                await refreshData();
+                
+            } catch (error) {
+                showError('Erreur: ' + error.message);
+            }
+        }
+
+        // Messages
+        function showError(message) {
+            const div = document.createElement('div');
+            div.className = 'error';
+            div.textContent = message;
+            const container = document.getElementById('message-container');
+            container.innerHTML = '';
+            container.appendChild(div);
+            setTimeout(() => div.remove(), 5000);
+        }
+
+        function showSuccess(message) {
+            const div = document.createElement('div');
+            div.className = 'success';
+            div.textContent = message;
+            const container = document.getElementById('message-container');
+            container.innerHTML = '';
+            container.appendChild(div);
+            setTimeout(() => div.remove(), 5000);
+        }
+
+        function showInfo(message) {
+            const div = document.createElement('div');
+            div.className = 'info';
+            div.textContent = message;
+            const container = document.getElementById('message-container');
+            container.innerHTML = '';
+            container.appendChild(div);
+            setTimeout(() => div.remove(), 5000);
+        }
+
+        // Initialiser
+        window.addEventListener('DOMContentLoaded', init);
+        
+        // Cleanup
+        window.addEventListener('beforeunload', () => {
+            if (refreshInterval) clearInterval(refreshInterval);
+        });
+    </script>
+</body>
+  </html>
