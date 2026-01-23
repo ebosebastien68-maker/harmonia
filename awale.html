@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Awalé</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #8b5e3c 0%, #5a3e1b 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #5a3e1b;
+            font-size: 28px;
+        }
+
+        .wallet-display {
+            background: linear-gradient(135deg, #8b5e3c 0%, #5a3e1b 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            background: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #8b5e3c 0%, #5a3e1b 100%);
+            color: white;
+        }
+
+        .content-section {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* PLATEAU DE JEU */
+        .game-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .player-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .player-info.active {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+        }
+
+        .player-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .player-score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #8b5e3c;
+        }
+
+        .timer-display {
+            text-align: center;
+            font-size: 48px;
+            font-weight: bold;
+            color: #4caf50;
+            margin: 20px 0;
+        }
+
+        .timer-display.warning {
+            color: #ff9800;
+            animation: pulse 1s infinite;
+        }
+
+        .timer-display.danger {
+            color: #f44336;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        #board {
+            display: grid;
+            grid-template-rows: repeat(2, 80px);
+            grid-template-columns: repeat(6, 80px);
+            gap: 10px;
+            justify-content: center;
+            margin: 30px 0;
+            transform: perspective(400px) rotateX(6deg);
+        }
+
+        .hole {
+            background: radial-gradient(circle at 30% 30%, #bb9966, #8b5e3c);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-weight: bold;
+            font-size: 20px;
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .hole.active {
+            cursor: pointer;
+            animation: glow 1.5s infinite;
+        }
+
+        .hole.active:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.8);
+        }
+
+        .hole.inactive {
+            opacity: 0.5;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: inset 0 4px 8px rgba(0,0,0,0.3); }
+            50% { box-shadow: inset 0 4px 8px rgba(0,0,0,0.3), 0 0 15px rgba(255, 193, 7, 0.6); }
+        }
+
+        .status-message {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .waiting-room {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .waiting-room h2 {
+            color: #8b5e3c;
+            margin-bottom: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #8b5e3c;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .section-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .section-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-color: #8b5e3c;
+        }
+
+        .section-card.joined {
+            background: #e8f5e9;
+            border-color: #4caf50;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5e3c 0%, #5a3e1b 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .match-history {
+            margin-top: 20px;
+        }
+
+        .match-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .match-item.won {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+
+        .match-item.lost {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+
+        .eliminated-banner {
+            background: #f44336;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Awalé</h1>
+            <div class="wallet-display">
+                💰 <span id="balance">0</span> FCFA
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('participate')">Participer</button>
+            <button class="tab" onclick="switchTab('play')">Jouer</button>
+            <button class="tab" onclick="switchTab('results')">Résultats</button>
+            <button class="tab" onclick="switchTab('leaderboard')">Classement</button>
+        </div>
+
+        <!-- TAB: Participer -->
+        <div id="participate-section" class="content-section active">
+            <h2>Tournois Disponibles</h2>
+            <div id="sections-container" class="section-grid">
+                <div class="loading">Chargement des tournois...</div>
+            </div>
+        </div>
+
+        <!-- TAB: Jouer -->
+        <div id="play-section" class="content-section">
+            <div id="game-area">
+                <div class="loading">Recherche d'un match...</div>
+            </div>
+        </div>
+
+        <!-- TAB: Résultats -->
+        <div id="results-section" class="content-section">
+            <h2>Mes Résultats</h2>
+            <div id="results-container">
+                <div class="loading">Chargement de vos résultats...</div>
+            </div>
+        </div>
+
+        <!-- TAB: Classement -->
+        <div id="leaderboard-section" class="content-section">
+            <h2>Classement</h2>
+            <div id="leaderboard-container">
+                <div class="loading">Chargement du classement...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <script>
+        // Configuration
+        const EDGE_FUNCTION_URL = 'YOUR_EDGE_FUNCTION_URL'; // À remplacer
+        
+        // État global
+        let currentSession = null;
+        let currentUser = null;
+        let userWallet = null;
+        let sections = [];
+        let userSections = [];
+        let currentMatch = null;
+        let currentPartId = null;
+        let isEliminated = false;
+        
+        // État du jeu
+        let board = Array.from({ length: 2 }, () => Array(6).fill(4));
+        let currentPlayer = 1; // 1 ou 2
+        let scores = [0, 0];
+        let myPlayerNumber = null; // 1 ou 2
+        let timerInterval = null;
+        let timeLeft = 30;
+
+        // Charger la session
+        function loadSession() {
+            const sessionStr = localStorage.getItem('session');
+            if (!sessionStr) {
+                console.error('❌ Pas de session');
+                return null;
+            }
+            
+            try {
+                currentSession = JSON.parse(sessionStr);
+                console.log('✅ Session chargée:', currentSession.user.email);
+                return currentSession;
+            } catch (error) {
+                console.error('❌ Erreur parsing session:', error);
+                return null;
+            }
+        }
+
+        // Vérifier l'authentification
+        function checkAuth() {
+            const session = loadSession();
+            
+            if (!session) {
+                showError('Vous devez être connecté');
+                setTimeout(() => {
+                    window.location.href = 'con.html';
+                }, 2000);
+                return false;
+            }
+            
+            if (session.expires_at && Date.now() > session.expires_at * 1000) {
+                localStorage.removeItem('session');
+                showError('Session expirée. Reconnectez-vous.');
+                setTimeout(() => {
+                    window.location.href = 'con.html';
+                }, 2000);
+                return false;
+            }
+            
+            currentUser = session.user;
+            return true;
+        }
+
+        // Headers d'authentification
+        function getAuthHeaders() {
+            if (!currentSession) loadSession();
+            
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentSession.access_token}`
+            };
+        }
+
+        // Appel API
+        async function callAPI(action, data = {}) {
+            if (!currentSession) {
+                throw new Error('Non authentifié');
+            }
+
+            const response = await fetch(EDGE_FUNCTION_URL, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ action, ...data })
+            });
+
+            const result = await response.json();
+            
+            if (!response.ok) {
+                if (response.status === 401) {
+                    localStorage.removeItem('session');
+                    showError('Session expirée. Redirection...');
+                    setTimeout(() => {
+                        window.location.href = 'con.html';
+                    }, 2000);
+                }
+                throw new Error(result.message || 'Erreur API');
+            }
+
+            return result;
+        }
+
+        // Initialisation
+        async function init() {
+            try {
+                if (!checkAuth()) return;
+                
+                console.log('✅ Utilisateur authentifié:', currentUser.email);
+
+                // Charger le wallet
+                const walletData = await callAPI('load_wallet');
+                userWallet = walletData.wallet;
+                document.getElementById('balance').textContent = userWallet.balance;
+
+                // Charger les sections
+                await loadSections();
+            } catch (error) {
+                console.error('Erreur init:', error);
+                showError('Erreur de chargement: ' + error.message);
+            }
+        }
+
+        // Charger les sections
+        async function loadSections() {
+            try {
+                const data = await callAPI('load_sections');
+                sections = data.sections;
+                
+                const data2 = await callAPI('load_user_sections');
+                userSections = data2.user_sections || [];
+
+                renderSections();
+            } catch (error) {
+                console.error('Erreur sections:', error);
+                showError('Erreur de chargement des sections');
+            }
+        }
+
+        // Afficher les sections
+        function renderSections() {
+            const container = document.getElementById('sections-container');
+            
+            if (sections.length === 0) {
+                container.innerHTML = '<div class="loading">Aucun tournoi disponible</div>';
+                return;
+            }
+
+            container.innerHTML = sections.map(section => {
+                const isJoined = userSections.some(us => us.section_id === section.id);
+                const canJoin = section.allow_join && !isJoined && userWallet.balance >= section.participation_cost;
+                const canAfford = userWallet.balance >= section.participation_cost;
+
+                return `
+                    <div class="section-card ${isJoined ? 'joined' : ''}"
+                         ${isJoined ? `onclick="loadParts('${section.id}')"` : canJoin ? `onclick="joinSection('${section.id}')"` : ''}>
+                        <h3>${section.title}</h3>
+                        <p style="margin: 10px 0;">💰 ${section.participation_cost} FCFA</p>
+                        <p style="color: #666; font-size: 14px; margin-bottom: 15px;">${section.description || 'Tournoi Awalé'}</p>
+                        ${isJoined ? 
+                            '<button class="btn btn-success">✓ Inscrit - Jouer</button>' :
+                            canJoin ?
+                                '<button class="btn btn-primary">Rejoindre</button>' :
+                                section.participation_cost > 0 && !canAfford ?
+                                    '<button class="btn btn-disabled">Solde insuffisant</button>' :
+                                    '<button class="btn btn-disabled">Indisponible</button>'
+                        }
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Rejoindre une section
+        async function joinSection(sectionId) {
+            if (!confirm('Voulez-vous rejoindre ce tournoi ?')) return;
+
+            try {
+                await callAPI('join_section', { section_id: sectionId });
+                showSuccess('Tournoi rejoint avec succès !');
+                await init();
+            } catch (error) {
+                showError('Erreur: ' + error.message);
+            }
+        }
+
+        // Charger les parties d'une section
+        async function loadParts(sectionId) {
+            try {
+                const data = await callAPI('load_parts', { section_id: sectionId });
+                
+                if (data.parts && data.parts.length > 0) {
+                    // Prendre la première partie active
+                    const activePart = data.parts.find(p => p.is_active);
+                    if (activePart) {
+                        currentPartId = activePart.id;
+                        switchTab('play');
+                        await loadCurrentMatch();
+                    } else {
+                        showError('Aucune partie active pour le moment');
+                    }
+                } else {
+                    showError('Aucune partie disponible');
+                }
+            } catch (error) {
+                showError('Erreur: ' + error.message);
+            }
+        }
+
+        // Charger le match en cours
+        async function loadCurrentMatch() {
+            try {
+                console.log('🔍 Recherche match pour part:', currentPartId);
+                
+                const data = await callAPI('load_my_current_match', { 
+                    part_id: currentPartId 
+                });
+                
+                if (data.match) {
+                    currentMatch = data.match;
+                    console.log('✅ Match trouvé:', currentMatch);
+                    
+                    // Déterminer si je suis joueur 1 ou 2
+                    myPlayerNumber = currentMatch.player1_id === currentUser.id ? 1 : 2;
+                    
+                    if (currentMatch.status === 'waiting') {
+                        showWaitingRoom();
+                    } else if (currentMatch.status === 'playing') {
+                        startGame();
+                    }
+                } else {
+                    console.log('⚠️ Aucun match actif');
+                    showWaitingRoom();
+                }
+            } catch (error) {
+                if (error.message.includes('éliminé')) {
+                    isEliminated = true;
+                    showEliminatedMessage();
+                } else {
+                    showError('Erreur: ' + error.message);
+                }
+            }
+        }
+
+        // Afficher la salle d'attente
+        function showWaitingRoom() {
+            const gameArea = document.getElementById('game-area');
+            gameArea.innerHTML = `
+                <div class="waiting-room">
+                    <h2>En attente d'un adversaire...</h2>
+                    <div class="spinner"></div>
+                    <p>Vous serez automatiquement associé à un adversaire</p>
+                    <p style="margin-top: 10px; color: #666;">Attendez que l'admin lance le prochain round</p>
+                </div>
+            `;
+            
+            // Vérifier toutes les 3 secondes
+            setTimeout(() => loadCurrentMatch(), 3000);
+        }
+
+        // Afficher message éliminé
+        function showEliminatedMessage() {
+            const gameArea = document.getElementById('game-area');
+            gameArea.innerHTML = `
+                <div class="eliminated-banner">
+                    ❌ Vous avez été éliminé du tournoi
+                </div>
+                <div style="text-align: center; padding: 20px;">
+                    <p style="font-size: 16px;">Vous pouvez consulter vos résultats dans l'onglet "Résultats"</p>
+                </div>
+            `;
+        }
+
+        // Démarrer le jeu
+        function startGame() {
+            const gameArea = document.getElementById('game-area');
+            
+            const opponent = myPlayerNumber === 1 ? currentMatch.player2 : currentMatch.player1;
+            const myInfo = myPlayerNumber === 1 ? currentMatch.player1 : currentMatch.player2;
+            
+            gameArea.innerHTML = `
+                <div class="game-container">
+                    <div class="player-info" id="player2-info">
+                        <div>
+                            <div class="player-name">${opponent.username}</div>
+                            <div style="color: #666; font-size: 14px;">Adversaire</div>
+                        </div>
+                        <div class="player-score" id="player2-score">0</div>
+                    </div>
+                    
+                    <div class="timer-display" id="timer">30</div>
+                    
+                    <div id="board"></div>
+                    
+                    <div class="player-info active" id="player1-info">
+                        <div>
+                            <div class="player-name">${myInfo.username} (Vous)</div>
+                            <div style="color: #666; font-size: 14px;">Votre tour</div>
+                        </div>
+                        <div class="player-score" id="player1-score">0</div>
+                    </div>
+                    
+                    <div class="status-message" id="status">Votre tour - Cliquez sur une case</div>
+                </div>
+            `;
+            
+            // Initialiser le plateau
+            board = Array.from({ length: 2 }, () => Array(6).fill(4));
+            scores = [0, 0];
+            currentPlayer = 1; // Le joueur en bas commence
+            
+            updateBoard();
+            startTimer();
+        }
+
+        // Mettre à jour le plateau
+        function updateBoard() {
+            const boardEl = document.getElementById('board');
+            if (!boardEl) return;
+            
+            boardEl.innerHTML = '';
+            
+            // Parcours standard de l'Awalé
+            const parcours = [
+                [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5],
+                [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0]
+            ];
+            
+            for (let r = 0; r < 2; r++) {
+                for (let c = 0; c < 6; c++) {
+                    const hole = document.createElement('div');
+                    hole.className = 'hole';
+                    hole.textContent = board[r][c];
+                    hole.dataset.r = r;
+                    hole.dataset.c = c;
+                    
+                    // Activer les cases du joueur actuel
+                    const isMyTurn = currentPlayer === myPlayerNumber;
+                    const isMyRow = (myPlayerNumber === 1 && r === 1) || (myPlayerNumber === 2 && r === 0);
+                    
+                    if (isMyTurn && isMyRow && board[r][c] > 0) {
+                        hole.classList.add('active');
+                        hole.onclick = () => playMove(r, c);
+                    } else {
+                        hole.classList.add('inactive');
+                    }
+                    
+                    boardEl.appendChild(hole);
+                }
+            }
+            
+            // Mettre à jour les scores
+            document.getElementById('player1-score').textContent = scores[0];
+            document.getElementById('player2-score').textContent = scores[1];
+        }
+
+        // Timer
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = currentMatch.move_timeout_seconds || 30;
+            updateTimerDisplay();
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const timerEl = document.getElementById('timer');
+            if (!timerEl) return;
+            
+            timerEl.textContent = timeLeft;
+            
+            if (timeLeft <= 5) {
+                timerEl.className = 'timer-display danger';
+            } else if (timeLeft <= 10) {
+                timerEl.className = 'timer-display warning';
+            } else {
+                timerEl.className = 'timer-display';
+            }
+        }
+
+        // Timeout
+        async function handleTimeout() {
+            console.log('⏱️ Temps écoulé !');
+            
+            // Si c'est mon tour, j'ai perdu
+            if (currentPlayer === myPlayerNumber) {
+                const winnerId = myPlayerNumber === 1 ? 
+                    currentMatch.player2_id : currentMatch.player1_id;
+                
+                await finishMatch(winnerId, 'timeout');
+            }
+        }
+
+        // Jouer un coup
+        async function playMove(r0, c0) {
+            console.log('🎮 Coup joué:', r0, c0);
+            
+            clearInterval(timerInterval);
+            
+            let seeds = board[r0][c0];
+            if (!seeds) return;
+            
+            board[r0][c0] = 0;
+            
+            // Parcours de l'Awalé
+            const parcours = [
+                [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5],
+                [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0]
+            ];
+            
+            let idx = parcours.findIndex(p => p[0] === r0 && p[1] === c0);
+            
+            // Distribuer les graines
+            while (seeds > 0) {
+                idx = (idx + 1) % 12;
+                let [r, c] = parcours[idx];
+                if (r === r0 && c === c0) continue;
+                board[r][c]++;
+                seeds--;
+            }
+            
+            // Capturer les graines (règle de l'Awalé)
+            let captured = 0;
+            let j = idx;
+            while (true) {
+                let [r, c] = parcours[j];
+                
+                // Vérifier si on est dans le camp adverse
+                const isOpponentRow = (myPlayerNumber === 1 && r === 0) || 
+                                      (myPlayerNumber === 2 && r === 1);
+                
+                if (isOpponentRow) {
+                    let v = board[r][c];
+                    if (v === 2 || v === 3) {
+                        captured += v;
+                        board[r][c] = 0;
+                        j = (j - 1 + 12) % 12;
+                        continue;
+                    }
+                }
+                break;
+            }
+            
+            scores[myPlayerNumber - 1] += captured;
+            
+            // Vérifier fin de partie
+            const totalSeeds = board.flat().reduce((a, b) => a + b, 0);
+            const myScore = scores[myPlayerNumber - 1];
+            
+            if (myScore >= 25 || totalSeeds === 0) {
+                // J'ai gagné !
+                await finishMatch(currentUser.id, 'normal');
+                return;
+            }
+            
+            // Changer de joueur
+            currentPlayer = currentPlayer === 1 ? 2 : 1;
+            updateBoard();
+            startTimer();
+        }
+
+        // Terminer le match
+        async function finishMatch(winnerId, reason = 'normal') {
+            clearInterval(timerInterval);
+            
+            try {
+                await callAPI('finish_awale_match', {
+                    run_id: currentMatch.id,
+                    winner_id: winnerId,
+                    player1_score: scores[0],
+                    player2_score: scores[1],
+                    defeat_reason: reason
+                });
+                
+                if (winnerId === currentUser.id) {
+                    confetti({ particleCount: 200, spread: 70 });
+                    showSuccess('🎉 Victoire ! Vous avez gagné !');
+                } else {
+                    showError('😢 Défaite... Vous avez été éliminé du tournoi');
+                    isEliminated = true;
+                }
+                
+                setTimeout(() => loadCurrentMatch(), 3000);
+                
+            } catch (error) {
+                showError('Erreur: ' + error.message);
+            }
+        }
+
+        // Changer d'onglet
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                if ((tabName === 'participate' && tab.textContent.includes('Participer')) ||
+                    (tabName === 'play' && tab.textContent.includes('Jouer')) ||
+                    (tabName === 'results' && tab.textContent.includes('Résultats')) ||
+                    (tabName === 'leaderboard' && tab.textContent.includes('Classement'))) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            const section = document.getElementById(tabName + '-section');
+            if (section) section.classList.add('active');
+            
+            if (tabName === 'results') {
+                loadResults();
+            } else if (tabName === 'leaderboard') {
+                loadLeaderboard();
+            }
+        }
+
+        // Charger les résultats
+        async function loadResults() {
+            if (!currentPartId) {
+                document.getElementById('results-container').innerHTML = 
+                    '<div class="loading">Rejoignez d\'abord un tournoi</div>';
+                return;
+            }
+            
+            try {
+                const data = await callAPI('load_my_awale_matches', { 
+                    part_id: currentPartId 
+                });
+                
+                renderResults(data.matches || []);
+            } catch (error) {
+                console.error('Erreur résultats:', error);
+                showError('Erreur de chargement des résultats');
+            }
+        }
+
+        // Afficher les résultats
+        function renderResults(matches) {
+            const container = document.getElementById('results-container');
+            
+            if (matches.length === 0) {
+                container.innerHTML = '<div class="loading">Aucun match joué pour le moment</div>';
+                return;
+            }
+            
+            container.innerHTML = '<div class="match-history">' + 
+                matches.map(match => {
+                    const isWinner = match.winner_id === currentUser.id;
+                    const opponent = match.player1_id === currentUser.id ? 
+                        match.player2 : match.player1;
+                    
+                    const myScore = match.player1_id === currentUser.id ? 
+                        match.player1_final_score : match.player2_final_score;
+                    const opponentScore = match.player1_id === currentUser.id ? 
+                        match.player2_final_score : match.player1_final_score;
+                    
+                    return `
+                        <div class="match-item ${isWinner ? 'won' : 'lost'}">
+                            <div>
+                                <div style="font-weight: bold;">
+                                    Round ${match.round_number} - vs ${opponent.username}
+                                </div>
+                                <div style="color: #666; font-size: 14px; margin-top: 5px;">
+                                    Score: ${myScore} - ${opponentScore}
+                                    ${match.defeat_reason === 'timeout' ? ' (Timeout)' : ''}
+                                </div>
+                            </div>
+                            <div style="font-size: 24px; font-weight: bold;">
+                                ${isWinner ? '🏆' : '❌'}
+                            </div>
+                        </div>
+                    `;
+                }).join('') + '</div>';
+        }
+
+        // Charger le leaderboard
+        async function loadLeaderboard() {
+            if (!currentPartId) {
+                document.getElementById('leaderboard-container').innerHTML = 
+                    '<div class="loading">Rejoignez d\'abord un tournoi</div>';
+                return;
+            }
+            
+            try {
+                const data = await callAPI('load_awale_leaderboard', { 
+                    part_id: currentPartId 
+                });
+                
+                renderLeaderboard(data.leaderboard || []);
+            } catch (error) {
+                console.error('Erreur leaderboard:', error);
+                showError('Erreur de chargement du classement');
+            }
+        }
+
+        // Afficher le leaderboard
+        function renderLeaderboard(leaderboard) {
+            const container = document.getElementById('leaderboard-container');
+            
+            if (leaderboard.length === 0) {
+                container.innerHTML = '<div class="loading">Aucune donnée disponible</div>';
+                return;
+            }
+            
+            container.innerHTML = leaderboard.map((player, index) => {
+                let rankClass = '';
+                let rankIcon = `#${index + 1}`;
+                
+                if (index === 0) {
+                    rankClass = 'gold';
+                    rankIcon = '🥇';
+                } else if (index === 1) {
+                    rankClass = 'silver';
+                    rankIcon = '🥈';
+                } else if (index === 2) {
+                    rankClass = 'bronze';
+                    rankIcon = '🥉';
+                } else {
+                    rankIcon = `#${index + 1}`;
+                }
+                
+                return `
+                    <div class="match-item" style="background: ${player.user_id === currentUser.id ? '#e3f2fd' : '#f8f9fa'}">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="font-size: 24px; font-weight: bold; min-width: 50px;">
+                                ${rankIcon}
+                            </div>
+                            <div>
+                                <div style="font-weight: bold; font-size: 16px;">
+                                    ${player.username}
+                                    ${player.user_id === currentUser.id ? ' (Vous)' : ''}
+                                </div>
+                                <div style="color: #666; font-size: 14px; margin-top: 5px;">
+                                    ${player.wins} victoires - ${player.losses} défaites
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-size: 20px; font-weight: bold; color: #8b5e3c;">
+                                ${player.total_seeds_collected}
+                            </div>
+                            <div style="font-size: 12px; color: #666; text-align: right;">
+                                graines
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Utilitaires
+        function showError(message) {
+            const div = document.createElement('div');
+            div.className = 'error';
+            div.textContent = message;
+            document.querySelector('.container').insertBefore(div, document.querySelector('.tabs'));
+            setTimeout(() => div.remove(), 5000);
+        }
+
+        function showSuccess(message) {
+            const div = document.createElement('div');
+            div.className = 'success';
+            div.textContent = message;
+            document.querySelector('.container').insertBefore(div, document.querySelector('.tabs'));
+            setTimeout(() => div.remove(), 5000);
+        }
+
+        // Initialiser au chargement
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
