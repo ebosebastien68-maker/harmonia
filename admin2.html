@@ -611,9 +611,13 @@
           <span class="sidebar-item-icon">📊</span>
           <span>Vue d'ensemble</span>
         </div>
+        <div class="sidebar-item" onclick="showPage('create')">
+          <span class="sidebar-item-icon">➕</span>
+          <span>Créer Tournoi</span>
+        </div>
         <div class="sidebar-item" onclick="showPage('tournament')">
           <span class="sidebar-item-icon">🏆</span>
-          <span>Tournoi</span>
+          <span>Gérer Tournoi</span>
         </div>
         <div class="sidebar-item" onclick="showPage('players')">
           <span class="sidebar-item-icon">👥</span>
@@ -673,6 +677,107 @@
                 <div class="stat-card-label">Round Actuel</div>
                 <div class="stat-card-value" id="stat-round">0</div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE: CRÉER TOURNOI -->
+        <div class="page" id="page-create">
+          <div class="page-header">
+            <h2>Créer un Nouveau Tournoi Awalé</h2>
+            <p>Configurez une section et ses parties</p>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>Étape 1 : Créer la Section</h3>
+            </div>
+            <form id="formCreateSection">
+              <div class="form-group">
+                <label>Titre du Tournoi *</label>
+                <input type="text" name="title" required placeholder="Ex: Tournoi Awalé Janvier 2026">
+              </div>
+              <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" placeholder="Décrivez le tournoi..."></textarea>
+              </div>
+              <div class="form-group">
+                <label>Coût d'inscription (FCFA)</label>
+                <input type="number" name="participation_cost" value="0" min="0" step="0.01">
+                <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">
+                  Mettez 0 pour un tournoi gratuit
+                </small>
+              </div>
+              <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input type="checkbox" name="is_public" checked>
+                  <span>Tournoi public</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input type="checkbox" name="allow_join" checked>
+                  <span>Autoriser inscriptions</span>
+                </label>
+              </div>
+              <button type="submit" class="btn-primary">Créer la Section</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>Étape 2 : Ajouter une Partie</h3>
+            </div>
+            <form id="formCreatePart">
+              <div class="form-group">
+                <label>Section *</label>
+                <select name="section_id" required id="selectSectionForPart">
+                  <option value="">Sélectionnez une section</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Numéro d'ordre *</label>
+                <input type="number" name="order_number" required min="1" value="1">
+                <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">
+                  Commencez par 1 pour la première partie
+                </small>
+              </div>
+              <div class="form-group">
+                <label>Titre de la partie (optionnel)</label>
+                <input type="text" name="title" placeholder="Ex: Phase éliminatoire">
+              </div>
+              <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input type="checkbox" name="is_active" checked>
+                  <span>Partie active</span>
+                </label>
+              </div>
+              <button type="submit" class="btn-primary">Ajouter la Partie</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>Sections Existantes</h3>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Titre</th>
+                    <th>Coût</th>
+                    <th>Public</th>
+                    <th>Créée le</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="sectionsListBody">
+                  <tr>
+                    <td colspan="5" class="loading">
+                      <div class="spinner"></div>
+                      Chargement...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -815,6 +920,10 @@
       
       document.getElementById(`page-${pageName}`).classList.add('active');
       event.target.closest('.sidebar-item').classList.add('active');
+
+      if (pageName === 'create') {
+        loadSectionsForCreate();
+      }
     }
 
     // Charger les sections
@@ -835,6 +944,130 @@
         alert('Erreur chargement sections: ' + error.message);
       }
     }
+
+    // Charger sections pour la page de création
+    async function loadSectionsForCreate() {
+      try {
+        const { data: sections, error } = await supabaseClient
+          .from('sections')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Pour le select
+        const select = document.getElementById('selectSectionForPart');
+        select.innerHTML = '<option value="">Sélectionnez une section</option>' +
+          sections.map(s => `<option value="${s.id}">${s.title}</option>`).join('');
+
+        // Pour le tableau
+        const tbody = document.getElementById('sectionsListBody');
+        if (sections.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;">Aucune section créée</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = sections.map(s => `
+          <tr>
+            <td><strong>${s.title}</strong></td>
+            <td>${s.participation_cost} FCFA</td>
+            <td><span class="badge ${s.is_public ? 'badge-success' : 'badge-warning'}">${s.is_public ? 'Oui' : 'Non'}</span></td>
+            <td>${new Date(s.created_at).toLocaleDateString('fr-FR')}</td>
+            <td>
+              <button class="btn-icon delete" onclick="deleteSection('${s.id}')">🗑️</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Erreur sections:', error);
+      }
+    }
+
+    // Supprimer une section
+    async function deleteSection(id) {
+      if (!confirm('⚠️ Supprimer cette section ? Toutes les parties et matchs seront également supprimés.')) return;
+      
+      try {
+        const { error } = await supabaseClient
+          .from('sections')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+        
+        alert('✅ Section supprimée avec succès');
+        loadSectionsForCreate();
+        loadSections();
+      } catch (error) {
+        alert('❌ Erreur: ' + error.message);
+      }
+    }
+
+    // Créer une section
+    document.getElementById('formCreateSection').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      
+      try {
+        // Récupérer l'ID de l'admin
+        const { data: adminUser } = await supabaseClient
+          .from('users')
+          .select('id')
+          .eq('email', currentUser.email)
+          .single();
+
+        if (!adminUser) throw new Error('Admin non trouvé');
+
+        const { data, error } = await supabaseClient
+          .from('sections')
+          .insert({
+            title: formData.get('title'),
+            description: formData.get('description') || null,
+            participation_cost: parseFloat(formData.get('participation_cost')),
+            is_public: formData.get('is_public') === 'on',
+            allow_join: formData.get('allow_join') === 'on',
+            created_by: adminUser.id
+          })
+          .select();
+
+        if (error) throw error;
+        
+        alert('✅ Section créée avec succès !');
+        e.target.reset();
+        loadSectionsForCreate();
+        loadSections();
+      } catch (error) {
+        alert('❌ Erreur: ' + error.message);
+      }
+    });
+
+    // Créer une partie
+    document.getElementById('formCreatePart').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      
+      try {
+        const partData = {
+          section_id: formData.get('section_id'),
+          order_number: parseInt(formData.get('order_number')),
+          title: formData.get('title') || null,
+          is_active: formData.get('is_active') === 'on'
+        };
+
+        const { data, error } = await supabaseClient
+          .from('parts')
+          .insert(partData)
+          .select();
+
+        if (error) throw error;
+        
+        alert('✅ Partie créée avec succès !');
+        e.target.reset();
+        loadSections();
+      } catch (error) {
+        alert('❌ Erreur: ' + error.message);
+      }
+    });
 
     // Charger les parties d'une section
     async function loadSectionParts() {
