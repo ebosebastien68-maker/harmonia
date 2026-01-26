@@ -1092,19 +1092,68 @@
       }
       
       try {
-        // Appeler la fonction RPC
-        const { data, error } = await supabaseClient
-          .rpc('fn_create_awale_round', {
-            p_part_id: currentPartId,
-            p_round_number: nextRound,
-            p_move_timeout_seconds: timeout
-          });
-        
-        if (error) {
-          throw error;
+        // 1. Récupérer la section
+        const { data: part } = await supabaseClient
+          .from('parts')
+          .select('section_id')
+          .eq('id', currentPartId)
+          .single();
+
+        if (!part) throw new Error('Partie non trouvée');
+
+        // 2. Récupérer les joueurs éligibles
+        const { data: eligiblePlayers, error: playersError } = await supabaseClient
+          .from('session_integrations')
+          .select('user_id')
+          .eq('section_id', part.section_id)
+          .eq('is_eliminated', false);
+
+        if (playersError) throw playersError;
+        if (!eligiblePlayers || eligiblePlayers.length === 0) {
+          throw new Error('Aucun joueur éligible');
         }
-        
-        alert(`✅ Round ${nextRound} lancé ! ${data?.length || 0} matchs créés.`);
+
+        // 3. Vérifier nombre pair
+        if (eligiblePlayers.length % 2 !== 0) {
+          throw new Error(`Nombre impair de joueurs: ${eligiblePlayers.length}. Impossible de créer des paires.`);
+        }
+
+        // 4. Mélanger aléatoirement
+        const shuffled = eligiblePlayers.sort(() => Math.random() - 0.5);
+        const pairCount = shuffled.length / 2;
+
+        // 5. Créer les matchs
+        const matchesToCreate = [];
+        for (let i = 0; i < pairCount; i++) {
+          matchesToCreate.push({
+            part_id: currentPartId,
+            round_number: nextRound,
+            player1_id: shuffled[i * 2].user_id,
+            player2_id: shuffled[i * 2 + 1].user_id,
+            status: 'waiting',
+            move_timeout_seconds: timeout
+          });
+        }
+
+        // 6. Insérer les matchs
+        const { error: insertError } = await supabaseClient
+          .from('awale_runs')
+          .insert(matchesToCreate);
+
+        if (insertError) throw insertError;
+
+        // 7. Mettre à jour la config
+        const { error: configError } = await supabaseClient
+          .from('awale_part_config')
+          .update({ 
+            current_round: nextRound,
+            updated_at: new Date().toISOString()
+          })
+          .eq('part_id', currentPartId);
+
+        if (configError) throw configError;
+
+        alert(`✅ Round ${nextRound} lancé ! ${pairCount} matchs créés.`);
         
         await refreshData();
         
@@ -1140,4 +1189,4 @@
     });
   </script>
 </body>
-            </html>
+  </html>
