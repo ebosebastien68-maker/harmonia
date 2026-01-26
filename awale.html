@@ -325,7 +325,12 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎮 Awalé</h1>
+            <div>
+                <h1>🎮 Awalé</h1>
+                <p style="margin-top: 5px; color: #8b5e3c; font-size: 14px; font-weight: 500;">
+                    Tournois à élimination directe
+                </p>
+            </div>
             <div class="wallet-display">
                 💰 <span id="balance">0</span> FCFA
             </div>
@@ -340,7 +345,15 @@
 
         <!-- TAB: Participer -->
         <div id="participate-section" class="content-section active">
-            <h2>Tournois Disponibles</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div>
+                    <h2 style="margin-bottom: 5px;">🎮 Tournois Awalé Disponibles</h2>
+                    <p style="color: #666; font-size: 14px;">Rejoignez un tournoi et affrontez d'autres joueurs en 1vs1</p>
+                </div>
+                <div style="background: linear-gradient(135deg, #8b5e3c 0%, #5a3e1b 100%); color: white; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: bold;">
+                    🏆 ÉLIMINATION DIRECTE
+                </div>
+            </div>
             <div id="sections-container" class="section-grid">
                 <div class="loading">Chargement des tournois...</div>
             </div>
@@ -373,7 +386,7 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <script>
         // Configuration
-        const EDGE_FUNCTION_URL = 'https://dfccebkmiebkqfwdudjg.supabase.co/functions/v1/awale'
+        const EDGE_FUNCTION_URL = 'YOUR_EDGE_FUNCTION_URL'; // Même URL que vraifaux.html !
         
         // État global
         let currentSession = null;
@@ -497,16 +510,22 @@
         // Charger les sections
         async function loadSections() {
             try {
+                console.log('📋 Chargement sections Awalé...');
+                
                 const data = await callAPI('load_sections');
                 sections = data.sections;
                 
+                console.log(`✅ ${sections.length} tournoi(x) Awalé trouvé(s)`);
+                
                 const data2 = await callAPI('load_user_sections');
                 userSections = data2.user_sections || [];
+                
+                console.log(`✅ Vous êtes inscrit à ${userSections.length} tournoi(s)`);
 
                 renderSections();
             } catch (error) {
                 console.error('Erreur sections:', error);
-                showError('Erreur de chargement des sections');
+                showError('Erreur de chargement des sections: ' + error.message);
             }
         }
 
@@ -515,7 +534,12 @@
             const container = document.getElementById('sections-container');
             
             if (sections.length === 0) {
-                container.innerHTML = '<div class="loading">Aucun tournoi disponible</div>';
+                container.innerHTML = `
+                    <div class="loading">
+                        <p style="font-size: 18px; margin-bottom: 10px;">Aucun tournoi Awalé disponible</p>
+                        <p style="color: #666; font-size: 14px;">Les tournois Awalé apparaîtront ici une fois créés par l'admin</p>
+                    </div>
+                `;
                 return;
             }
 
@@ -527,15 +551,25 @@
                 return `
                     <div class="section-card ${isJoined ? 'joined' : ''}"
                          ${isJoined ? `onclick="loadParts('${section.id}')"` : canJoin ? `onclick="joinSection('${section.id}')"` : ''}>
-                        <h3>${section.title}</h3>
-                        <p style="margin: 10px 0;">💰 ${section.participation_cost} FCFA</p>
-                        <p style="color: #666; font-size: 14px; margin-bottom: 15px;">${section.description || 'Tournoi Awalé'}</p>
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <span style="font-size: 24px;">🎮</span>
+                            <h3 style="margin: 0;">${section.title}</h3>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin: 10px 0;">
+                            <span style="background: linear-gradient(135deg, #8b5e3c 0%, #5a3e1b 100%); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                                TOURNOI AWALÉ
+                            </span>
+                            <span style="background: ${section.participation_cost === 0 ? '#4caf50' : '#ff9800'}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                                ${section.participation_cost === 0 ? 'GRATUIT' : section.participation_cost + ' FCFA'}
+                            </span>
+                        </div>
+                        <p style="color: #666; font-size: 14px; margin-bottom: 15px;">${section.description || 'Tournoi à élimination directe - Affrontez d\'autres joueurs en 1vs1'}</p>
                         ${isJoined ? 
-                            '<button class="btn btn-success">✓ Inscrit - Jouer</button>' :
+                            '<button class="btn btn-success">✓ Inscrit - Commencer à jouer</button>' :
                             canJoin ?
-                                '<button class="btn btn-primary">Rejoindre</button>' :
+                                `<button class="btn btn-primary">${section.participation_cost === 0 ? 'Rejoindre gratuitement' : 'Rejoindre pour ' + section.participation_cost + ' FCFA'}</button>` :
                                 section.participation_cost > 0 && !canAfford ?
-                                    '<button class="btn btn-disabled">Solde insuffisant</button>' :
+                                    '<button class="btn btn-disabled">💰 Solde insuffisant</button>' :
                                     '<button class="btn btn-disabled">Indisponible</button>'
                         }
                     </div>
@@ -1047,4 +1081,4 @@
         window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
-</html>
+    </html>
