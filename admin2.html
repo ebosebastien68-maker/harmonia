@@ -418,6 +418,13 @@
       color: #0c5460;
     }
 
+    .badge-awale {
+      background: linear-gradient(135deg, #8b5e3c 0%, #5a3e1b 100%);
+      color: white;
+      padding: 6px 14px;
+      font-weight: 700;
+    }
+
     .btn-icon {
       padding: 8px 12px;
       border: none;
@@ -633,16 +640,22 @@
         <!-- PAGE: VUE D'ENSEMBLE -->
         <div class="page active" id="page-overview">
           <div class="page-header">
-            <h2>Vue d'ensemble</h2>
-            <p>Sélectionnez un tournoi pour commencer</p>
+            <h2>Vue d'ensemble - Tournois Awalé</h2>
+            <p>Sélectionnez un tournoi Awalé pour commencer</p>
           </div>
 
           <div class="card">
             <div class="card-header">
               <h3>Sélection du Tournoi</h3>
             </div>
+            <div class="alert-box alert-success" style="margin-bottom: 20px;">
+              <span>🎮</span>
+              <div>
+                <strong>Filtrage automatique :</strong> Seuls les tournois Awalé sont affichés
+              </div>
+            </div>
             <div class="form-group">
-              <label>Section</label>
+              <label>Section (Tournois Awalé uniquement)</label>
               <select id="section-select" onchange="loadSectionParts()">
                 <option value="">Chargement...</option>
               </select>
@@ -692,6 +705,12 @@
             <div class="card-header">
               <h3>Étape 1 : Créer la Section</h3>
             </div>
+            <div class="alert-box alert-success" style="margin-bottom: 20px;">
+              <span>🎮</span>
+              <div>
+                <strong>Type de jeu :</strong> Cette section sera automatiquement marquée comme "Awalé" (game_type='awale')
+              </div>
+            </div>
             <form id="formCreateSection">
               <div class="form-group">
                 <label>Titre du Tournoi *</label>
@@ -699,7 +718,7 @@
               </div>
               <div class="form-group">
                 <label>Description</label>
-                <textarea name="description" placeholder="Décrivez le tournoi..."></textarea>
+                <textarea name="description" placeholder="Tournoi à élimination directe - Affrontez d'autres joueurs en 1vs1"></textarea>
               </div>
               <div class="form-group">
                 <label>Coût d'inscription (FCFA)</label>
@@ -718,7 +737,7 @@
                   <span>Autoriser inscriptions</span>
                 </label>
               </div>
-              <button type="submit" class="btn-primary">Créer la Section</button>
+              <button type="submit" class="btn-primary">Créer la Section Awalé</button>
             </form>
           </div>
 
@@ -756,12 +775,13 @@
 
           <div class="card">
             <div class="card-header">
-              <h3>Sections Existantes</h3>
+              <h3>Tournois Awalé Existants</h3>
             </div>
             <div class="table-container">
               <table>
                 <thead>
                   <tr>
+                    <th>Type</th>
                     <th>Titre</th>
                     <th>Coût</th>
                     <th>Public</th>
@@ -771,7 +791,7 @@
                 </thead>
                 <tbody id="sectionsListBody">
                   <tr>
-                    <td colspan="5" class="loading">
+                    <td colspan="6" class="loading">
                       <div class="spinner"></div>
                       Chargement...
                     </td>
@@ -926,49 +946,68 @@
       }
     }
 
-    // Charger les sections
+    // Charger les sections AWALÉ UNIQUEMENT
     async function loadSections() {
       try {
+        console.log('📋 Chargement sections Awalé...');
+        
         const { data: sections, error } = await supabaseClient
           .from('sections')
           .select('*')
+          .eq('game_type', 'awale')  // 🎯 FILTRE AWALÉ UNIQUEMENT
           .order('created_at', { ascending: false });
 
         if (error) throw error;
 
+        console.log(`✅ ${sections.length} section(s) Awalé trouvée(s)`);
+
         const select = document.getElementById('section-select');
-        select.innerHTML = '<option value="">Sélectionnez une section</option>' +
-          sections.map(s => `<option value="${s.id}">${s.title}</option>`).join('');
+        if (sections.length === 0) {
+          select.innerHTML = '<option value="">Aucun tournoi Awalé créé</option>';
+        } else {
+          select.innerHTML = '<option value="">Sélectionnez une section</option>' +
+            sections.map(s => `<option value="${s.id}">${s.title}</option>`).join('');
+        }
       } catch (error) {
         console.error('Erreur sections:', error);
         alert('Erreur chargement sections: ' + error.message);
       }
     }
 
-    // Charger sections pour la page de création
+    // Charger sections pour la page de création (AWALÉ UNIQUEMENT)
     async function loadSectionsForCreate() {
       try {
+        console.log('📋 Chargement sections Awalé pour création...');
+        
         const { data: sections, error } = await supabaseClient
           .from('sections')
           .select('*')
+          .eq('game_type', 'awale')  // 🎯 FILTRE AWALÉ UNIQUEMENT
           .order('created_at', { ascending: false });
 
         if (error) throw error;
 
+        console.log(`✅ ${sections.length} section(s) Awalé trouvée(s)`);
+
         // Pour le select
         const select = document.getElementById('selectSectionForPart');
-        select.innerHTML = '<option value="">Sélectionnez une section</option>' +
-          sections.map(s => `<option value="${s.id}">${s.title}</option>`).join('');
+        if (sections.length === 0) {
+          select.innerHTML = '<option value="">Aucun tournoi Awalé créé</option>';
+        } else {
+          select.innerHTML = '<option value="">Sélectionnez une section</option>' +
+            sections.map(s => `<option value="${s.id}">${s.title}</option>`).join('');
+        }
 
         // Pour le tableau
         const tbody = document.getElementById('sectionsListBody');
         if (sections.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;">Aucune section créée</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#666;">Aucun tournoi Awalé créé</td></tr>';
           return;
         }
 
         tbody.innerHTML = sections.map(s => `
           <tr>
+            <td><span class="badge badge-awale">AWALÉ</span></td>
             <td><strong>${s.title}</strong></td>
             <td>${s.participation_cost} FCFA</td>
             <td><span class="badge ${s.is_public ? 'badge-success' : 'badge-warning'}">${s.is_public ? 'Oui' : 'Non'}</span></td>
@@ -985,7 +1024,7 @@
 
     // Supprimer une section
     async function deleteSection(id) {
-      if (!confirm('⚠️ Supprimer cette section ? Toutes les parties et matchs seront également supprimés.')) return;
+      if (!confirm('⚠️ Supprimer ce tournoi Awalé ? Toutes les parties et matchs seront également supprimés.')) return;
       
       try {
         const { error } = await supabaseClient
@@ -995,7 +1034,7 @@
 
         if (error) throw error;
         
-        alert('✅ Section supprimée avec succès');
+        alert('✅ Tournoi Awalé supprimé avec succès');
         loadSectionsForCreate();
         loadSections();
       } catch (error) {
@@ -1003,12 +1042,14 @@
       }
     }
 
-    // Créer une section
+    // Créer une section AWALÉ
     document.getElementById('formCreateSection').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
       
       try {
+        console.log('➕ Création section Awalé...');
+        
         // Récupérer l'ID de l'admin
         const { data: adminUser } = await supabaseClient
           .from('users')
@@ -1023,6 +1064,7 @@
           .insert({
             title: formData.get('title'),
             description: formData.get('description') || null,
+            game_type: 'awale',  // 🎯 FORCER LE TYPE AWALÉ
             participation_cost: parseFloat(formData.get('participation_cost')),
             is_public: formData.get('is_public') === 'on',
             allow_join: formData.get('allow_join') === 'on',
@@ -1032,11 +1074,14 @@
 
         if (error) throw error;
         
-        alert('✅ Section créée avec succès !');
+        console.log('✅ Section Awalé créée:', data);
+        
+        alert('✅ Tournoi Awalé créé avec succès !');
         e.target.reset();
         loadSectionsForCreate();
         loadSections();
       } catch (error) {
+        console.error('❌ Erreur création:', error);
         alert('❌ Erreur: ' + error.message);
       }
     });
@@ -1203,7 +1248,6 @@
 
     // Mettre à jour l'UI
     function updateUI() {
-      // Stats
       const totalPlayers = players.length;
       const eligiblePlayers = players.filter(p => !p.is_eliminated).length;
       const eliminatedPlayers = players.filter(p => p.is_eliminated).length;
@@ -1212,13 +1256,11 @@
       document.getElementById('stat-eligible').textContent = eligiblePlayers;
       document.getElementById('stat-eliminated').textContent = eliminatedPlayers;
       
-      // Vérifier si nombre pair
       const isEven = eligiblePlayers % 2 === 0;
       const nextRound = partConfig ? partConfig.current_round + 1 : 1;
       
       document.getElementById('next-round-number').textContent = nextRound;
       
-      // Afficher les alertes
       const roundStatus = document.getElementById('round-status');
       
       if (eligiblePlayers === 0) {
@@ -1236,10 +1278,7 @@
         document.getElementById('launch-round-btn').style.display = 'block';
       }
       
-      // Afficher les joueurs
       renderPlayers();
-      
-      // Afficher les matchs
       renderMatches();
     }
 
@@ -1325,7 +1364,6 @@
       }
       
       try {
-        // 1. Récupérer la section
         const { data: part } = await supabaseClient
           .from('parts')
           .select('section_id')
@@ -1334,7 +1372,6 @@
 
         if (!part) throw new Error('Partie non trouvée');
 
-        // 2. Récupérer les joueurs éligibles
         const { data: eligiblePlayers, error: playersError } = await supabaseClient
           .from('session_integrations')
           .select('user_id')
@@ -1346,16 +1383,13 @@
           throw new Error('Aucun joueur éligible');
         }
 
-        // 3. Vérifier nombre pair
         if (eligiblePlayers.length % 2 !== 0) {
           throw new Error(`Nombre impair de joueurs: ${eligiblePlayers.length}. Impossible de créer des paires.`);
         }
 
-        // 4. Mélanger aléatoirement
         const shuffled = eligiblePlayers.sort(() => Math.random() - 0.5);
         const pairCount = shuffled.length / 2;
 
-        // 5. Créer les matchs
         const matchesToCreate = [];
         for (let i = 0; i < pairCount; i++) {
           matchesToCreate.push({
@@ -1368,14 +1402,12 @@
           });
         }
 
-        // 6. Insérer les matchs
         const { error: insertError } = await supabaseClient
           .from('awale_runs')
           .insert(matchesToCreate);
 
         if (insertError) throw insertError;
 
-        // 7. Mettre à jour la config
         const { error: configError } = await supabaseClient
           .from('awale_part_config')
           .update({ 
@@ -1416,7 +1448,6 @@
       }
     })();
 
-    // Cleanup
     window.addEventListener('beforeunload', () => {
       if (refreshInterval) clearInterval(refreshInterval);
     });
